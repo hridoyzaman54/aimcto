@@ -1,0 +1,17 @@
+{
+  "query": "SELECT id, email, name, role, passwordHash FROM users WHERE email = 'testfix@example.com';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 36mcytF5qJQhZ7v.root --database VhY62QwspUwMBHkhpmh2WZ --execute SELECT id, email, name, role, passwordHash FROM users WHERE email = 'testfix@example.com';",
+  "rows": [
+    {
+      "id": "60104",
+      "email": "testfix@example.com",
+      "name": "Test User Fix",
+      "role": "admin",
+      "passwordHash": "$2b$12$piocJ2lfZ4zO/f.cN1WF.eVkozZ2sujqyEqPzKE44QSd/TmH3OyFC"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\temail\tname\trole\tpasswordHash\n60104\ttestfix@example.com\tTest User Fix\tadmin\t$2b$12$piocJ2lfZ4zO/f.cN1WF.eVkozZ2sujqyEqPzKE44QSd/TmH3OyFC\n",
+  "stderr": "",
+  "execution_time_ms": 55
+}

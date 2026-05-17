@@ -1,0 +1,31 @@
+{
+  "query": "SELECT id, email, name, role, passwordHash FROM users WHERE role = 'admin' AND passwordHash IS NOT NULL LIMIT 3;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 36mcytF5qJQhZ7v.root --database VhY62QwspUwMBHkhpmh2WZ --execute SELECT id, email, name, role, passwordHash FROM users WHERE role = 'admin' AND passwordHash IS NOT NULL LIMIT 3;",
+  "rows": [
+    {
+      "id": "1",
+      "email": "aimcentre360monia@gmail.com",
+      "name": "Monia Zaman",
+      "role": "admin",
+      "passwordHash": "$2b$10$We0B6ZOE.kyde6R5p28GbeJYnq6SKRfTLnjUiGHQ2ARZW8xjj3/hG"
+    },
+    {
+      "id": "60005",
+      "email": "testadmin@example.com",
+      "name": "Test Admin",
+      "role": "admin",
+      "passwordHash": "$2b$12$fZCYTTN5Zp5s28f1MjXLJOPftq67hM8tV07QvEASDB4nbxl6R3Rqu"
+    },
+    {
+      "id": "60015",
+      "email": "admin2@test.com",
+      "name": "Admin User 2",
+      "role": "admin",
+      "passwordHash": "$2b$12$nCNwdmZrufXmz0pYEZafHuEPdK.bhkfh2uqV6/8GRfP88E..V8Wwa"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\temail\tname\trole\tpasswordHash\n1\taimcentre360monia@gmail.com\tMonia Zaman\tadmin\t$2b$10$We0B6ZOE.kyde6R5p28GbeJYnq6SKRfTLnjUiGHQ2ARZW8xjj3/hG\n60005\ttestadmin@example.com\tTest Admin\tadmin\t$2b$12$fZCYTTN5Zp5s28f1MjXLJOPftq67hM8tV07QvEASDB4nbxl6R3Rqu\n60015\tadmin2@test.com\tAdmin User 2\tadmin\t$2b$12$nCNwdmZrufXmz0pYEZafHuEPdK.bhkfh2uqV6/8GRfP88E..V8Wwa\n",
+  "stderr": "",
+  "execution_time_ms": 54
+}

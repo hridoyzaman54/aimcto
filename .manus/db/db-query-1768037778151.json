@@ -1,0 +1,14 @@
+{
+  "query": "SELECT email, name FROM users WHERE role = 'admin' LIMIT 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 36mcytF5qJQhZ7v.root --database VhY62QwspUwMBHkhpmh2WZ --execute SELECT email, name FROM users WHERE role = 'admin' LIMIT 1;",
+  "rows": [
+    {
+      "email": "aimcentre360monia@gmail.com",
+      "name": "Monia Zaman"
+    }
+  ],
+  "messages": [],
+  "stdout": "email\tname\naimcentre360monia@gmail.com\tMonia Zaman\n",
+  "stderr": "",
+  "execution_time_ms": 56
+}

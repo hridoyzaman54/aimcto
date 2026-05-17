@@ -1,0 +1,40 @@
+{
+  "query": "SELECT id, email, name, role FROM users WHERE role = 'admin' LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 36mcytF5qJQhZ7v.root --database VhY62QwspUwMBHkhpmh2WZ --execute SELECT id, email, name, role FROM users WHERE role = 'admin' LIMIT 5;",
+  "rows": [
+    {
+      "id": "1",
+      "email": "aimcentre360monia@gmail.com",
+      "name": "Monia Zaman",
+      "role": "admin"
+    },
+    {
+      "id": "60005",
+      "email": "testadmin@example.com",
+      "name": "Test Admin",
+      "role": "admin"
+    },
+    {
+      "id": "60015",
+      "email": "admin2@test.com",
+      "name": "Admin User 2",
+      "role": "admin"
+    },
+    {
+      "id": "60028",
+      "email": "hridoyzaman54@gmail.com",
+      "name": "Hridoy Zaman",
+      "role": "admin"
+    },
+    {
+      "id": "60092",
+      "email": "debugadmin@test.com",
+      "name": "Debug Admin",
+      "role": "admin"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\temail\tname\trole\n1\taimcentre360monia@gmail.com\tMonia Zaman\tadmin\n60005\ttestadmin@example.com\tTest Admin\tadmin\n60015\tadmin2@test.com\tAdmin User 2\tadmin\n60028\thridoyzaman54@gmail.com\tHridoy Zaman\tadmin\n60092\tdebugadmin@test.com\tDebug Admin\tadmin\n",
+  "stderr": "",
+  "execution_time_ms": 137
+}
