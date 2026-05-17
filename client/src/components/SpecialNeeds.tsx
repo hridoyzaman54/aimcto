@@ -1269,52 +1269,90 @@ export default function SpecialNeeds() {
 
       <div className="container relative z-10">
         
-        {/* === HEADER INTRO === */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-20 sm:mb-28">
-          <motion.div {...fadeUp} className="space-y-6">
-            <span className="inline-flex items-center gap-2 text-primary font-bold tracking-[0.35em] uppercase text-xs sm:text-sm">
-              <Star className="h-4 w-4 text-primary animate-spin" /> Inclusive Sensory Learning
-            </span>
-            <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold leading-[1.05] tracking-tight">
+        {/* === INTERACTIVE KIDS HERO INTRO === */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-20 sm:mb-28 relative">
+          
+          {/* Floating Playful Background Elements */}
+          <div className="absolute inset-0 pointer-events-none overflow-visible">
+            <motion.div animate={{ y: [0, -20, 0], rotate: [0, 10, -10, 0] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }} className="absolute top-10 left-10 text-5xl opacity-80 filter drop-shadow-md hidden md:block">⭐</motion.div>
+            <motion.div animate={{ y: [0, 30, 0], x: [0, 15, 0] }} transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }} className="absolute bottom-10 left-[45%] text-6xl opacity-70 filter drop-shadow-lg">🎈</motion.div>
+            <motion.div animate={{ y: [0, -25, 0], rotate: [0, 360] }} transition={{ duration: 15, repeat: Infinity, ease: "linear" }} className="absolute top-20 right-[55%] text-4xl opacity-60 filter drop-shadow-md hidden lg:block">🎨</motion.div>
+          </div>
+
+          <motion.div {...fadeUp} className="space-y-8 relative z-10">
+            <motion.div 
+              initial={{ scale: 0.8, opacity: 0 }} 
+              animate={{ scale: 1, opacity: 1 }} 
+              transition={{ type: "spring", bounce: 0.5 }}
+              className="inline-flex items-center gap-3 bg-gradient-to-r from-primary/20 to-secondary/20 border-2 border-primary/30 px-5 py-2.5 rounded-full shadow-sm"
+            >
+              <Sparkles className="h-5 w-5 text-primary animate-pulse" /> 
+              <span className="text-primary font-black tracking-widest uppercase text-xs sm:text-sm drop-shadow-sm">
+                A Magical Place To Grow
+              </span>
+            </motion.div>
+            
+            <h2 className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold leading-[1.1] tracking-tight">
               Every Child Has a <br />
-              <span className="italic text-primary drop-shadow-sm">Beautiful Mind</span>
+              <span className="relative inline-block mt-2">
+                <span className="relative z-10 italic text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-emerald-500 drop-shadow-sm">
+                  Beautiful Mind
+                </span>
+                <motion.svg className="absolute w-full h-4 -bottom-1 left-0 text-secondary/40 z-0" viewBox="0 0 100 20" preserveAspectRatio="none">
+                  <motion.path d="M0,10 Q50,20 100,10" stroke="currentColor" strokeWidth="8" fill="none" strokeLinecap="round" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 1.5, delay: 0.5 }} />
+                </motion.svg>
+              </span>
             </h2>
-            <p className="text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed text-justify">
-              Welcome to AIM Centre's specialized sensory harbor. Through interactive sound therapy, colorful particle stimulation, and customized Autism Level 1, 2, and 3 programs, we help neurodiverse children express their beautiful potentials. We provide structured learning experiences, continuous clinical guidance, and comprehensive family support networks.
+            
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground leading-relaxed text-justify max-w-xl font-medium bg-background/50 backdrop-blur-sm p-4 rounded-3xl border border-border/50 shadow-sm">
+              Welcome to AIM Centre's sensory playground! Through musical therapy, magical interactive drawing, and fun balloon games, we help amazing neurodiverse kids express their brilliant potentials in a safe, colorful world.
             </p>
-            <div className="flex flex-wrap gap-4">
-              <Button size="lg" className="rounded-none px-8 py-6 text-xs sm:text-sm uppercase tracking-widest font-bold">
-                Start Sensory Play <ArrowRight className="ml-2 h-4 w-4" />
+            
+            <div className="flex flex-wrap gap-5 pt-2">
+              <Button size="lg" className="rounded-full px-8 py-7 text-sm uppercase tracking-widest font-black group transition-all hover:scale-105 shadow-xl shadow-primary/20 hover:shadow-primary/40 relative overflow-hidden bg-primary hover:bg-primary/90 text-primary-foreground">
+                <span className="relative z-10 flex items-center gap-2">Play & Learn <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" /></span>
+                <motion.div className="absolute inset-0 bg-white/20" initial={{ x: "-100%" }} whileHover={{ x: "100%" }} transition={{ duration: 0.5 }} />
               </Button>
-              <Button variant="outline" size="lg" className="rounded-none border-foreground px-8 py-6 text-xs sm:text-sm uppercase tracking-widest font-bold">
-                Consult Our Team
+              <Button variant="outline" size="lg" className="rounded-full border-2 border-primary/20 hover:border-primary hover:bg-primary/5 px-8 py-7 text-sm uppercase tracking-widest font-black transition-all hover:scale-105 group text-primary">
+                <Heart className="mr-2 h-5 w-5 group-hover:fill-primary transition-colors" /> Parents Area
               </Button>
             </div>
           </motion.div>
 
-          <motion.div {...fadeUp} transition={{ delay: 0.2 }} className="relative">
-            <div className="relative aspect-[4/3] rounded-[2.5rem] overflow-hidden shadow-2xl border-4 border-card">
+          <motion.div 
+            {...fadeUp} 
+            transition={{ delay: 0.2, type: "spring", stiffness: 50 }} 
+            className="relative z-10 perspective-1000"
+            whileHover={{ scale: 1.02, rotateY: -5, rotateX: 5 }}
+          >
+            <div className="relative aspect-square sm:aspect-[4/3] rounded-[3rem] overflow-hidden shadow-2xl border-8 border-white dark:border-gray-800 bg-emerald-100">
               <img
-                src="https://images.unsplash.com/photo-1596464716127-f2a82984de30?q=80&w=1200"
-                alt="Child engaging in sensory learning"
-                className="w-full h-full object-cover"
+                src="https://images.unsplash.com/photo-1560859247-494b5e02e642?q=80&w=1200"
+                alt="Happy child engaging in colorful sensory play"
+                className="w-full h-full object-cover transition-transform duration-1000 hover:scale-110"
                 loading="lazy"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/25 to-transparent pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-t from-primary/40 via-transparent to-transparent pointer-events-none" />
+              
+              {/* Interactive overlay sparkles on image */}
+              <motion.div animate={{ opacity: [0, 1, 0], scale: [0.5, 1.2, 0.5] }} transition={{ duration: 3, repeat: Infinity, delay: 1 }} className="absolute top-1/4 left-1/4 text-white">✨</motion.div>
+              <motion.div animate={{ opacity: [0, 1, 0], scale: [0.5, 1.5, 0.5] }} transition={{ duration: 4, repeat: Infinity, delay: 2.5 }} className="absolute bottom-1/3 right-1/4 text-white">✨</motion.div>
             </div>
+            
+            {/* Playful Floating Badge */}
             <motion.div
-              animate={{ y: [0, -10, 0] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute -bottom-6 -left-6 bg-card p-4 sm:p-5 rounded-2xl shadow-2xl border border-border"
+              animate={{ y: [0, -15, 0], rotate: [-2, 2, -2] }}
+              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute -bottom-8 -left-8 bg-white dark:bg-gray-900 p-5 rounded-3xl shadow-2xl border-2 border-primary/20 flex items-center gap-4 cursor-pointer hover:bg-primary/5 transition-colors"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
             >
-              <div className="flex items-center gap-3">
-                <div className="h-11 w-11 bg-emerald-100 dark:bg-emerald-950/30 rounded-full flex items-center justify-center">
-                  <Heart className="h-5 w-5 text-emerald-600 dark:text-emerald-400 animate-pulse" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-sm">Guided Sensory Care</h4>
-                  <p className="text-[10px] text-muted-foreground">IEP & ABA Certified</p>
-                </div>
+              <div className="h-14 w-14 bg-gradient-to-br from-primary to-secondary rounded-2xl flex items-center justify-center shadow-inner rotate-3">
+                <Star className="h-7 w-7 text-white fill-white animate-pulse" />
+              </div>
+              <div>
+                <h4 className="font-black text-base text-foreground tracking-wide">Fun Guaranteed!</h4>
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1 text-primary">Autism Friendly</p>
               </div>
             </motion.div>
           </motion.div>
