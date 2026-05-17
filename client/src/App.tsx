@@ -68,6 +68,10 @@ const ParentProgress = lazy(() => import("@/pages/parent/ParentProgress"));
 // Utility pages
 const DocumentViewerDemo = lazy(() => import("@/pages/DocumentViewerDemo"));
 
+// Public standalone pages
+const SpecialNeedsPage = lazy(() => import("@/pages/SpecialNeedsPage"));
+const MentalHealthPage = lazy(() => import("@/pages/MentalHealthPage"));
+
 function Router() {
   return (
     <Suspense fallback={<DashboardLayoutSkeleton />}>
@@ -79,6 +83,8 @@ function Router() {
         <Route path={"/login"} component={Login} />
         <Route path={"/signup"} component={Signup} />
         <Route path={"/document-viewer"} component={DocumentViewerDemo} />
+        <Route path={"/special-needs"} component={SpecialNeedsPage} />
+        <Route path={"/mental-health"} component={MentalHealthPage} />
         
         {/* Admin routes */}
         <Route path={"/admin"} component={AdminDashboard} />

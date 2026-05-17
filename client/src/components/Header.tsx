@@ -61,9 +61,9 @@ export default function Header() {
   const navLinks = [
     { name: t("nav.home"), href: "#top" },
     { name: t("nav.courses"), href: "#courses" },
-    { name: t("nav.specialNeeds"), href: "#special-needs" },
+    { name: t("nav.specialNeeds"), href: "/special-needs", isExternal: true },
     { name: t("nav.tinyExplorers"), href: "#tiny-explorers" },
-    { name: t("nav.mentalHealth"), href: "#mental-health" },
+    { name: t("nav.mentalHealth"), href: "/mental-health", isExternal: true },
     { name: t("nav.aimVerse"), href: "#aimverse" },
     { name: t("nav.gallery"), href: "#gallery" },
     // Add Admin link only for admin users
