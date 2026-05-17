@@ -61,9 +61,9 @@ export default function Header() {
   const navLinks = [
     { name: t("nav.home"), href: "#top" },
     { name: t("nav.courses"), href: "#courses" },
-    { name: t("nav.specialNeeds"), href: "/special-needs", isExternal: true },
+    { name: t("nav.specialNeeds"), href: "/special-needs" },
     { name: t("nav.tinyExplorers"), href: "#tiny-explorers" },
-    { name: t("nav.mentalHealth"), href: "/mental-health", isExternal: true },
+    { name: t("nav.mentalHealth"), href: "/mental-health" },
     { name: t("nav.aimVerse"), href: "#aimverse" },
     { name: t("nav.gallery"), href: "#gallery" },
     // Add Admin link only for admin users
@@ -75,23 +75,59 @@ export default function Header() {
     e.preventDefault();
     setIsMobileMenuOpen(false);
 
-    if (href === "#top") {
+    // Client-side page navigation (SPA style)
+    if (href.startsWith("/")) {
+      setLocation(href);
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
 
-    const element = document.querySelector(href);
-    if (element) {
-      const headerOffset = 80;
-      const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.scrollY - headerOffset;
+    // Scroll to section on same page, or redirect to home first if on another page
+    if (href.startsWith("#")) {
+      if (location !== "/") {
+        setLocation("/");
+        window.location.hash = href;
+        return;
+      }
 
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: "smooth"
-      });
+      if (href === "#top") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+
+      const element = document.querySelector(href);
+      if (element) {
+        const headerOffset = 80;
+        const elementPosition = element.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.scrollY - headerOffset;
+
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: "smooth"
+        });
+      }
     }
-  }, []);
+  }, [location, setLocation]);
+
+  // Handle smooth scroll to section if loaded from another page with a hash
+  useEffect(() => {
+    if (location === "/" && window.location.hash) {
+      const hash = window.location.hash;
+      const element = document.querySelector(hash);
+      if (element) {
+        const timer = setTimeout(() => {
+          const headerOffset = 80;
+          const elementPosition = element.getBoundingClientRect().top;
+          const offsetPosition = elementPosition + window.scrollY - headerOffset;
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: "smooth"
+          });
+        }, 150); // Small delay to let the DOM fully mount
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [location]);
 
   const toggleMobileMenu = useCallback(() => {
     setIsMobileMenuOpen(prev => !prev);
