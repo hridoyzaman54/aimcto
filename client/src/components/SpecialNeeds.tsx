@@ -1269,90 +1269,101 @@ export default function SpecialNeeds() {
 
       <div className="container relative z-10">
         
-        {/* === INTERACTIVE KIDS HERO INTRO === */}
+        {/* === PREMIUM CINEMATIC HERO INTRO === */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-20 sm:mb-28 relative">
           
-          {/* Floating Playful Background Elements */}
-          <div className="absolute inset-0 pointer-events-none overflow-visible">
-            <motion.div animate={{ y: [0, -20, 0], rotate: [0, 10, -10, 0] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }} className="absolute top-10 left-10 text-5xl opacity-80 filter drop-shadow-md hidden md:block">⭐</motion.div>
-            <motion.div animate={{ y: [0, 30, 0], x: [0, 15, 0] }} transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }} className="absolute bottom-10 left-[45%] text-6xl opacity-70 filter drop-shadow-lg">🎈</motion.div>
-            <motion.div animate={{ y: [0, -25, 0], rotate: [0, 360] }} transition={{ duration: 15, repeat: Infinity, ease: "linear" }} className="absolute top-20 right-[55%] text-4xl opacity-60 filter drop-shadow-md hidden lg:block">🎨</motion.div>
+          {/* Subtle Premium Background Elements */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            <motion.div animate={{ y: [-20, 20, -20], opacity: [0.3, 0.6, 0.3] }} transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }} className="absolute top-10 left-10 w-64 h-64 bg-primary/10 rounded-full blur-[80px]" />
+            <motion.div animate={{ x: [-30, 30, -30], opacity: [0.2, 0.5, 0.2] }} transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }} className="absolute bottom-10 right-[40%] w-80 h-80 bg-emerald-500/10 rounded-full blur-[100px]" />
           </div>
 
           <motion.div {...fadeUp} className="space-y-8 relative z-10">
             <motion.div 
-              initial={{ scale: 0.8, opacity: 0 }} 
-              animate={{ scale: 1, opacity: 1 }} 
-              transition={{ type: "spring", bounce: 0.5 }}
-              className="inline-flex items-center gap-3 bg-gradient-to-r from-primary/20 to-secondary/20 border-2 border-primary/30 px-5 py-2.5 rounded-full shadow-sm"
+              initial={{ opacity: 0, x: -20 }} 
+              animate={{ opacity: 1, x: 0 }} 
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="inline-flex items-center gap-4"
             >
-              <Sparkles className="h-5 w-5 text-primary animate-pulse" /> 
-              <span className="text-primary font-black tracking-widest uppercase text-xs sm:text-sm drop-shadow-sm">
-                A Magical Place To Grow
+              <div className="h-[1px] w-8 bg-primary"></div>
+              <span className="text-primary font-bold tracking-[0.4em] uppercase text-xs">
+                Sensory Learning Academy
               </span>
             </motion.div>
             
-            <h2 className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold leading-[1.1] tracking-tight">
+            <h2 className="font-serif text-5xl sm:text-6xl md:text-7xl font-extrabold leading-[1.05] tracking-tight text-foreground">
               Every Child Has a <br />
-              <span className="relative inline-block mt-2">
-                <span className="relative z-10 italic text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-emerald-500 drop-shadow-sm">
+              <span className="relative inline-block mt-3">
+                <span className="relative z-10 italic text-transparent bg-clip-text bg-gradient-to-r from-primary via-primary/80 to-primary">
                   Beautiful Mind
                 </span>
-                <motion.svg className="absolute w-full h-4 -bottom-1 left-0 text-secondary/40 z-0" viewBox="0 0 100 20" preserveAspectRatio="none">
-                  <motion.path d="M0,10 Q50,20 100,10" stroke="currentColor" strokeWidth="8" fill="none" strokeLinecap="round" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 1.5, delay: 0.5 }} />
-                </motion.svg>
+                <motion.div 
+                  initial={{ scaleX: 0 }} 
+                  animate={{ scaleX: 1 }} 
+                  transition={{ duration: 1.5, delay: 0.5, ease: "circOut" }} 
+                  className="absolute bottom-1 left-0 w-full h-[3px] bg-gradient-to-r from-primary to-transparent origin-left z-0" 
+                />
               </span>
             </h2>
             
-            <p className="text-base sm:text-lg md:text-xl text-muted-foreground leading-relaxed text-justify max-w-xl font-medium bg-background/50 backdrop-blur-sm p-4 rounded-3xl border border-border/50 shadow-sm">
-              Welcome to AIM Centre's sensory playground! Through musical therapy, magical interactive drawing, and fun balloon games, we help amazing neurodiverse kids express their brilliant potentials in a safe, colorful world.
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground leading-relaxed max-w-xl font-light">
+              Welcome to AIM Centre's specialized sensory harbor. Through clinical sound therapy, elegant interactive interfaces, and customized Autism Level 1-3 programs, we help neurodiverse children express their highest potential in a secure, sophisticated environment.
             </p>
             
-            <div className="flex flex-wrap gap-5 pt-2">
-              <Button size="lg" className="rounded-full px-8 py-7 text-sm uppercase tracking-widest font-black group transition-all hover:scale-105 shadow-xl shadow-primary/20 hover:shadow-primary/40 relative overflow-hidden bg-primary hover:bg-primary/90 text-primary-foreground">
-                <span className="relative z-10 flex items-center gap-2">Play & Learn <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" /></span>
-                <motion.div className="absolute inset-0 bg-white/20" initial={{ x: "-100%" }} whileHover={{ x: "100%" }} transition={{ duration: 0.5 }} />
+            <div className="flex flex-wrap gap-5 pt-4">
+              <Button size="lg" className="rounded-none px-10 py-7 text-xs uppercase tracking-[0.2em] font-bold group transition-all duration-500 hover:shadow-[0_0_40px_-10px_rgba(var(--primary),0.5)] bg-primary text-primary-foreground relative overflow-hidden">
+                <span className="relative z-10 flex items-center gap-3">
+                  Begin Journey <ArrowRight className="h-4 w-4 group-hover:translate-x-2 transition-transform duration-500" />
+                </span>
+                <div className="absolute inset-0 bg-white/20 translate-y-[100%] group-hover:translate-y-0 transition-transform duration-500 ease-out" />
               </Button>
-              <Button variant="outline" size="lg" className="rounded-full border-2 border-primary/20 hover:border-primary hover:bg-primary/5 px-8 py-7 text-sm uppercase tracking-widest font-black transition-all hover:scale-105 group text-primary">
-                <Heart className="mr-2 h-5 w-5 group-hover:fill-primary transition-colors" /> Parents Area
+              <Button variant="outline" size="lg" className="rounded-none border-[1px] border-border hover:border-primary px-10 py-7 text-xs uppercase tracking-[0.2em] font-bold transition-all duration-500 hover:bg-primary/5 text-foreground">
+                <Shield className="mr-3 h-4 w-4 text-primary" /> Parent Portal
               </Button>
             </div>
           </motion.div>
 
           <motion.div 
             {...fadeUp} 
-            transition={{ delay: 0.2, type: "spring", stiffness: 50 }} 
+            transition={{ delay: 0.3, duration: 1 }} 
             className="relative z-10 perspective-1000"
-            whileHover={{ scale: 1.02, rotateY: -5, rotateX: 5 }}
+            whileHover={{ scale: 1.01, rotateY: -2, rotateX: 2 }}
           >
-            <div className="relative aspect-square sm:aspect-[4/3] rounded-[3rem] overflow-hidden shadow-2xl border-8 border-white dark:border-gray-800 bg-emerald-100">
+            <div className="relative aspect-[4/5] sm:aspect-[3/4] rounded-tr-[8rem] rounded-bl-[8rem] rounded-tl-2xl rounded-br-2xl overflow-hidden shadow-2xl border border-border/50 bg-card">
               <img
-                src="https://images.unsplash.com/photo-1560859247-494b5e02e642?q=80&w=1200"
-                alt="Happy child engaging in colorful sensory play"
-                className="w-full h-full object-cover transition-transform duration-1000 hover:scale-110"
+                src="https://images.unsplash.com/photo-1544027993-37dbfe43562a?q=80&w=1200"
+                alt="Child engaging in specialized sensory learning"
+                className="w-full h-full object-cover transition-transform duration-[2s] hover:scale-105"
                 loading="lazy"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-primary/40 via-transparent to-transparent pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent pointer-events-none" />
               
-              {/* Interactive overlay sparkles on image */}
-              <motion.div animate={{ opacity: [0, 1, 0], scale: [0.5, 1.2, 0.5] }} transition={{ duration: 3, repeat: Infinity, delay: 1 }} className="absolute top-1/4 left-1/4 text-white">✨</motion.div>
-              <motion.div animate={{ opacity: [0, 1, 0], scale: [0.5, 1.5, 0.5] }} transition={{ duration: 4, repeat: Infinity, delay: 2.5 }} className="absolute bottom-1/3 right-1/4 text-white">✨</motion.div>
+              {/* Elegant floating light specks instead of emojis */}
+              {[...Array(5)].map((_, i) => (
+                <motion.div 
+                  key={i}
+                  animate={{ y: [0, -40, 0], opacity: [0, 0.8, 0] }} 
+                  transition={{ duration: 4 + i, repeat: Infinity, delay: i * 0.5 }} 
+                  className="absolute w-1 h-1 bg-primary rounded-full shadow-[0_0_10px_2px_rgba(var(--primary),0.8)]"
+                  style={{ left: `${20 + i * 15}%`, bottom: `${10 + (i % 3) * 10}%` }}
+                />
+              ))}
             </div>
             
-            {/* Playful Floating Badge */}
+            {/* Premium Clinical Badge */}
             <motion.div
-              animate={{ y: [0, -15, 0], rotate: [-2, 2, -2] }}
-              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute -bottom-8 -left-8 bg-white dark:bg-gray-900 p-5 rounded-3xl shadow-2xl border-2 border-primary/20 flex items-center gap-4 cursor-pointer hover:bg-primary/5 transition-colors"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.8, duration: 0.8 }}
+              className="absolute -bottom-6 -left-6 sm:-left-12 bg-card/80 backdrop-blur-xl p-5 sm:p-6 rounded-none border border-border/50 shadow-2xl flex items-center gap-5 cursor-pointer group"
             >
-              <div className="h-14 w-14 bg-gradient-to-br from-primary to-secondary rounded-2xl flex items-center justify-center shadow-inner rotate-3">
-                <Star className="h-7 w-7 text-white fill-white animate-pulse" />
+              <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center relative overflow-hidden">
+                <Heart className="h-5 w-5 text-primary relative z-10 group-hover:scale-110 transition-transform duration-500" />
+                <div className="absolute inset-0 bg-primary/20 scale-0 group-hover:scale-100 transition-transform duration-500 rounded-full" />
               </div>
               <div>
-                <h4 className="font-black text-base text-foreground tracking-wide">Fun Guaranteed!</h4>
-                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1 text-primary">Autism Friendly</p>
+                <h4 className="font-serif font-bold text-lg text-foreground tracking-wide">IEP Certified</h4>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mt-1">Specialized Care</p>
               </div>
             </motion.div>
           </motion.div>
