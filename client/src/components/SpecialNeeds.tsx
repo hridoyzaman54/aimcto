@@ -1270,7 +1270,7 @@ export default function SpecialNeeds() {
       <div className="container relative z-10">
         
         {/* === PREMIUM CINEMATIC HERO INTRO === */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-20 sm:mb-28 relative">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center lg:items-start pt-10 mb-20 sm:mb-28 relative">
           
           {/* Subtle Premium Background Elements */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -1278,7 +1278,7 @@ export default function SpecialNeeds() {
             <motion.div animate={{ x: [-30, 30, -30], opacity: [0.2, 0.5, 0.2] }} transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }} className="absolute bottom-10 right-[40%] w-80 h-80 bg-emerald-500/10 rounded-full blur-[100px]" />
           </div>
 
-          <motion.div {...fadeUp} className="space-y-8 relative z-10">
+          <motion.div {...fadeUp} className="space-y-8 relative z-10 lg:pt-8">
             <motion.div 
               initial={{ opacity: 0, x: -20 }} 
               animate={{ opacity: 1, x: 0 }} 
@@ -1326,10 +1326,11 @@ export default function SpecialNeeds() {
           <motion.div 
             {...fadeUp} 
             transition={{ delay: 0.3, duration: 1 }} 
-            className="relative z-10 perspective-1000"
+            className="relative z-10 perspective-1000 mt-8 lg:mt-0"
             whileHover={{ scale: 1.01, rotateY: -2, rotateX: 2 }}
           >
-            <div className="relative aspect-[4/5] sm:aspect-[3/4] rounded-tr-[8rem] rounded-bl-[8rem] rounded-tl-2xl rounded-br-2xl overflow-hidden shadow-2xl border border-border/50 bg-card">
+            {/* Aspect ratio changed to square/wide to prevent it from dropping too low vertically */}
+            <div className="relative aspect-square lg:aspect-[4/3] rounded-[3rem] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.15)] border-4 border-card bg-card">
               <img
                 src="https://images.unsplash.com/photo-1544027993-37dbfe43562a?q=80&w=1200"
                 alt="Child engaging in specialized sensory learning"
@@ -1338,34 +1339,59 @@ export default function SpecialNeeds() {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent pointer-events-none" />
               
-              {/* Elegant floating light specks instead of emojis */}
-              {[...Array(5)].map((_, i) => (
-                <motion.div 
-                  key={i}
-                  animate={{ y: [0, -40, 0], opacity: [0, 0.8, 0] }} 
-                  transition={{ duration: 4 + i, repeat: Infinity, delay: i * 0.5 }} 
-                  className="absolute w-1 h-1 bg-primary rounded-full shadow-[0_0_10px_2px_rgba(var(--primary),0.8)]"
-                  style={{ left: `${20 + i * 15}%`, bottom: `${10 + (i % 3) * 10}%` }}
-                />
-              ))}
+              {/* Elegant Interactive Hover Particles inside the image */}
+              <div className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-500 pointer-events-none">
+                {[...Array(8)].map((_, i) => (
+                  <motion.div 
+                    key={i}
+                    animate={{ y: [0, -60, 0], opacity: [0, 1, 0], scale: [0.5, 1.5, 0.5] }} 
+                    transition={{ duration: 3 + Math.random() * 2, repeat: Infinity, delay: Math.random() * 2 }} 
+                    className="absolute w-2 h-2 bg-primary rounded-full shadow-[0_0_15px_3px_rgba(var(--primary),0.8)]"
+                    style={{ left: `${10 + Math.random() * 80}%`, bottom: `${20 + Math.random() * 40}%` }}
+                  />
+                ))}
+              </div>
             </div>
             
-            {/* Premium Clinical Badge */}
-            <motion.div
+            {/* Premium Interactive Element: Sound & Sensory Touchpoint */}
+            <motion.button
+              onClick={() => {
+                try {
+                  const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+                  const osc = audioCtx.createOscillator();
+                  const gain = audioCtx.createGain();
+                  osc.type = 'sine';
+                  osc.frequency.setValueAtTime(528, audioCtx.currentTime); // 528Hz calming frequency
+                  gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.5);
+                  osc.connect(gain).connect(audioCtx.destination);
+                  osc.start();
+                  osc.stop(audioCtx.currentTime + 1.6);
+                } catch(e) {}
+              }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.8, duration: 0.8 }}
-              className="absolute -bottom-6 -left-6 sm:-left-12 bg-card/80 backdrop-blur-xl p-5 sm:p-6 rounded-none border border-border/50 shadow-2xl flex items-center gap-5 cursor-pointer group"
+              className="absolute -bottom-8 -left-4 sm:-left-12 bg-card/90 backdrop-blur-xl p-5 sm:p-6 rounded-3xl border border-border/50 shadow-2xl flex items-center gap-5 cursor-pointer group hover:bg-card hover:border-primary/50 transition-all z-20"
             >
-              <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center relative overflow-hidden">
-                <Heart className="h-5 w-5 text-primary relative z-10 group-hover:scale-110 transition-transform duration-500" />
-                <div className="absolute inset-0 bg-primary/20 scale-0 group-hover:scale-100 transition-transform duration-500 rounded-full" />
+              <div className="h-14 w-14 bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl flex items-center justify-center relative overflow-hidden shadow-inner">
+                <Music className="h-6 w-6 text-primary relative z-10 group-hover:scale-110 group-hover:rotate-12 transition-transform duration-500" />
+                <motion.div 
+                  className="absolute inset-0 bg-primary/20 rounded-2xl" 
+                  initial={{ scale: 0 }}
+                  whileHover={{ scale: 1.5, opacity: 0 }}
+                  transition={{ duration: 0.8, repeat: Infinity }}
+                />
               </div>
-              <div>
-                <h4 className="font-serif font-bold text-lg text-foreground tracking-wide">IEP Certified</h4>
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mt-1">Specialized Care</p>
+              <div className="text-left">
+                <h4 className="font-serif font-bold text-lg text-foreground tracking-wide flex items-center gap-2">
+                  Interactive Audio <Sparkles className="h-3 w-3 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                </h4>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mt-1 group-hover:text-primary transition-colors">Tap for 528Hz Calm</p>
               </div>
-            </motion.div>
+            </motion.button>
           </motion.div>
         </div>
 
