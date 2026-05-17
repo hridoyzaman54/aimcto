@@ -3,6 +3,7 @@ import { Brain, Heart, Sparkles, Star, Eye, Ear, Hand, Volume2, VolumeX, Music, 
 import { Button } from "./ui/button";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { Link } from "wouter";
 
 // ==========================================
 // 1. PREMIUM SYNTHESIZER & AUDIO GENERATOR
@@ -343,6 +344,7 @@ function InteractiveShatterZone() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [currentColor, setCurrentColor] = useState('#3b82f6');
+  const [isDrawing, setIsDrawing] = useState(false);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -352,92 +354,125 @@ function InteractiveShatterZone() {
     if (!ctx) return;
 
     let animationFrameId: number;
-    let particles: { x: number; y: number; vx: number; vy: number; r: number; color: string; alpha: number }[] = [];
+    let particles: { x: number; y: number; vx: number; vy: number; r: number; color: string; alpha: number; life: number }[] = [];
 
     const handleResize = () => {
       if (containerRef.current && canvas) {
         canvas.width = containerRef.current.clientWidth;
-        canvas.height = 300;
+        canvas.height = 350;
       }
     };
 
     handleResize();
     window.addEventListener('resize', handleResize);
 
-    const spawnParticles = (x: number, y: number, color: string) => {
-      try {
-        const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(300 + Math.random() * 400, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
-        osc.connect(gain).connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.35);
-      } catch (e) {}
-
-      for (let i = 0; i < 24; i++) {
+    const spawnParticles = (x: number, y: number, color: string, amount: number = 3) => {
+      for (let i = 0; i < amount; i++) {
         const angle = Math.random() * Math.PI * 2;
-        const speed = 1 + Math.random() * 4;
+        const speed = Math.random() * 2 + 0.5;
         particles.push({
           x,
           y,
           vx: Math.cos(angle) * speed,
-          vy: Math.sin(angle) * speed,
-          r: 3 + Math.random() * 5,
+          vy: Math.sin(angle) * speed - 1, // Slight upward initial velocity
+          r: 2 + Math.random() * 6,
           color,
-          alpha: 1
+          alpha: 1,
+          life: 1.0
         });
       }
     };
 
-    const handleInteraction = (e: MouseEvent | TouchEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      let clientX = 0;
-      let clientY = 0;
+    const playSound = (y: number) => {
+      try {
+        const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        // Map Y position to frequency
+        const freq = 300 + ((canvas.height - y) / canvas.height) * 500;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.02, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
+        osc.connect(gain).connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.25);
+      } catch (e) {}
+    };
 
+    const getPos = (e: MouseEvent | TouchEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      let clientX = 0, clientY = 0;
       if ('touches' in e) {
-        if (e.touches.length === 0) return;
+        if (e.touches.length === 0) return null;
         clientX = e.touches[0].clientX;
         clientY = e.touches[0].clientY;
       } else {
-        clientX = e.clientX;
-        clientY = e.clientY;
+        clientX = (e as MouseEvent).clientX;
+        clientY = (e as MouseEvent).clientY;
       }
-
-      const x = clientX - rect.left;
-      const y = clientY - rect.top;
-      spawnParticles(x, y, currentColor);
+      return { x: clientX - rect.left, y: clientY - rect.top };
     };
 
-    canvas.addEventListener('click', handleInteraction);
-    canvas.addEventListener('touchstart', handleInteraction, { passive: true });
+    const handleDown = (e: MouseEvent | TouchEvent) => {
+      setIsDrawing(true);
+      const pos = getPos(e);
+      if (pos) {
+        spawnParticles(pos.x, pos.y, currentColor, 15);
+        playSound(pos.y);
+      }
+    };
+
+    const handleMove = (e: MouseEvent | TouchEvent) => {
+      if (!isDrawing) return;
+      const pos = getPos(e);
+      if (pos) {
+        spawnParticles(pos.x, pos.y, currentColor, 5);
+        if (Math.random() > 0.8) playSound(pos.y);
+      }
+    };
+
+    const handleUp = () => setIsDrawing(false);
+
+    canvas.addEventListener('mousedown', handleDown);
+    canvas.addEventListener('mousemove', handleMove);
+    canvas.addEventListener('mouseup', handleUp);
+    canvas.addEventListener('mouseleave', handleUp);
+    canvas.addEventListener('touchstart', handleDown, { passive: true });
+    canvas.addEventListener('touchmove', handleMove, { passive: true });
+    canvas.addEventListener('touchend', handleUp);
 
     const render = () => {
+      // Premium fade effect
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+      // If dark mode, use a dark fade, but we can't easily detect here without class.
+      // We will clear rect completely for crisp particles.
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      ctx.font = 'normal 14px Outfit, sans-serif';
-      ctx.fillStyle = 'rgba(156, 163, 175, 0.4)';
+      ctx.font = 'bold 16px Outfit, sans-serif';
+      ctx.fillStyle = 'rgba(156, 163, 175, 0.3)';
       ctx.textAlign = 'center';
-      ctx.fillText('Tap / Touch Anywhere on this Canvas', canvas.width / 2, canvas.height / 2);
+      ctx.fillText('Tap, Hold, and Drag to Draw Magic', canvas.width / 2, canvas.height / 2);
 
       particles.forEach((p, idx) => {
+        p.vy += 0.05; // gravity
         p.x += p.vx;
         p.y += p.vy;
-        p.alpha -= 0.02;
-        if (p.alpha <= 0) {
+        p.life -= 0.015;
+        p.alpha = Math.max(0, p.life);
+
+        if (p.alpha <= 0 || p.y > canvas.height) {
           particles.splice(idx, 1);
           return;
         }
+
         ctx.save();
         ctx.globalAlpha = p.alpha;
         ctx.fillStyle = p.color;
-        ctx.shadowBlur = 8;
+        ctx.shadowBlur = 15;
         ctx.shadowColor = p.color;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, p.r * p.life, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
       });
@@ -450,12 +485,17 @@ function InteractiveShatterZone() {
     return () => {
       window.removeEventListener('resize', handleResize);
       if (canvas) {
-        canvas.removeEventListener('click', handleInteraction);
-        canvas.removeEventListener('touchstart', handleInteraction);
+        canvas.removeEventListener('mousedown', handleDown);
+        canvas.removeEventListener('mousemove', handleMove);
+        canvas.removeEventListener('mouseup', handleUp);
+        canvas.removeEventListener('mouseleave', handleUp);
+        canvas.removeEventListener('touchstart', handleDown);
+        canvas.removeEventListener('touchmove', handleMove);
+        canvas.removeEventListener('touchend', handleUp);
       }
       cancelAnimationFrame(animationFrameId);
     };
-  }, [currentColor]);
+  }, [currentColor, isDrawing]);
 
   const palette = [
     { color: '#3b82f6', label: 'Sky' },
@@ -463,29 +503,32 @@ function InteractiveShatterZone() {
     { color: '#a855f7', label: 'Magic' },
     { color: '#f59e0b', label: 'Sun' },
     { color: '#f43f5e', label: 'Love' },
+    { color: '#0ea5e9', label: 'Ocean' }
   ];
 
   return (
-    <div ref={containerRef} className="flex flex-col bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-2xl h-full justify-between">
-      <div>
-        <h3 className="font-serif text-xl sm:text-2xl font-bold mb-3 flex items-center gap-2 text-foreground">
-          <Eye className="h-5 w-5 text-primary animate-pulse" /> Sensory Particle Canvas
+    <div ref={containerRef} className="flex flex-col bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-2xl h-full justify-between overflow-hidden relative">
+      <div className="absolute top-0 right-0 w-48 h-48 bg-primary/5 rounded-full pointer-events-none translate-x-10 -translate-y-10 blur-2xl" />
+      
+      <div className="z-10 relative">
+        <h3 className="font-serif text-xl sm:text-2xl font-bold mb-2 flex items-center gap-2 text-foreground">
+          <Eye className="h-6 w-6 text-primary animate-pulse" /> Sensory Magic Canvas
         </h3>
-        <p className="text-xs sm:text-sm text-muted-foreground mb-6">
-          A dynamic, bork-free particle playground. Choose a relaxing tone palette, then tap inside the field to build magical musical bursts.
+        <p className="text-xs sm:text-sm text-muted-foreground mb-6 max-w-sm">
+          A premium, interactive particle playground. Choose a relaxing tone palette, then click and drag to draw magical, musical gravity bursts.
         </p>
       </div>
 
-      <div className="border border-dashed border-border/80 rounded-2xl overflow-hidden bg-background/50 relative h-[300px]">
-        <canvas ref={canvasRef} className="w-full h-full block cursor-crosshair" />
+      <div className="border border-border/80 rounded-2xl overflow-hidden bg-gradient-to-br from-background to-secondary/20 relative h-[350px] shadow-inner z-10">
+        <canvas ref={canvasRef} className="w-full h-full block cursor-crosshair touch-none" />
       </div>
 
-      <div className="flex flex-wrap gap-2 mt-6 justify-center">
+      <div className="flex flex-wrap gap-2 mt-6 justify-center z-10 relative">
         {palette.map((p, i) => (
           <button
             key={i}
             onClick={() => setCurrentColor(p.color)}
-            className={`px-3 py-1.5 rounded-full text-xs font-semibold border-2 transition-all active:scale-95 ${currentColor === p.color ? 'border-foreground shadow-md' : 'border-transparent'}`}
+            className={`px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider border-2 transition-all shadow-sm hover:scale-105 active:scale-95 ${currentColor === p.color ? 'border-foreground shadow-md ring-2 ring-foreground/20 ring-offset-2 ring-offset-background' : 'border-transparent hover:brightness-110'}`}
             style={{ backgroundColor: p.color, color: '#fff' }}
           >
             {p.label}
@@ -501,15 +544,26 @@ function InteractiveShatterZone() {
 // ==========================================
 function BalloonPopGame() {
   const [score, setScore] = useState(0);
-  const [balloons, setBalloons] = useState<{ id: number; x: number; size: number; color: string; speed: number; y: number }[]>([]);
+  const [balloons, setBalloons] = useState<{ id: number; x: number; size: number; colorObj: {color:string; name:string}; speed: number; y: number; mathEq: string }[]>([]);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [targetColor, setTargetColor] = useState<{color:string; name:string} | null>(null);
+  const [floatingMath, setFloatingMath] = useState<{id:number, text:string, x:number, y:number}[]>([]);
 
-  const colors = ['#f43f5e', '#3b82f6', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6'];
+  const colorsList = [
+    {color: '#f43f5e', name: 'Red'}, 
+    {color: '#3b82f6', name: 'Blue'}, 
+    {color: '#10b981', name: 'Green'}, 
+    {color: '#f59e0b', name: 'Orange'}, 
+    {color: '#ec4899', name: 'Pink'}, 
+    {color: '#8b5cf6', name: 'Purple'}
+  ];
 
   const startGame = () => {
     setIsPlaying(true);
     setScore(0);
     setBalloons([]);
+    setFloatingMath([]);
+    setTargetColor(colorsList[Math.floor(Math.random() * colorsList.length)]);
   };
 
   const stopGame = () => {
@@ -520,18 +574,22 @@ function BalloonPopGame() {
     if (!isPlaying) return;
 
     const spawner = setInterval(() => {
+      const c = colorsList[Math.floor(Math.random() * colorsList.length)];
+      const num1 = Math.floor(Math.random() * 5) + 1;
+      const num2 = Math.floor(Math.random() * 5) + 1;
       setBalloons(prev => [
         ...prev,
         {
           id: Math.random(),
           x: 10 + Math.random() * 80,
           y: 110,
-          size: 45 + Math.random() * 30,
-          color: colors[Math.floor(Math.random() * colors.length)],
-          speed: 1.0 + Math.random() * 1.5
+          size: 55 + Math.random() * 25,
+          colorObj: c,
+          speed: 1.0 + Math.random() * 1.2,
+          mathEq: `${num1} + ${num2} = ${num1+num2}`
         }
       ]);
-    }, 1200);
+    }, 1500);
 
     const floater = setInterval(() => {
       setBalloons(prev =>
@@ -547,75 +605,114 @@ function BalloonPopGame() {
     };
   }, [isPlaying]);
 
-  const popBalloon = (id: number) => {
+  const popBalloon = (b: any) => {
     try {
       const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
+      const freqs: any = { 'Red': 400, 'Blue': 500, 'Green': 600, 'Orange': 700, 'Pink': 800, 'Purple': 900 };
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(600 + Math.random() * 300, audioCtx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
-      gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
+      osc.frequency.setValueAtTime(freqs[b.colorObj.name] || 600, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.15);
+      gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
       osc.connect(gain).connect(audioCtx.destination);
       osc.start();
-      osc.stop(audioCtx.currentTime + 0.15);
+      osc.stop(audioCtx.currentTime + 0.2);
     } catch (e) {}
 
-    setScore(prev => prev + 1);
-    setBalloons(prev => prev.filter(b => b.id !== id));
+    const isCorrect = targetColor && b.colorObj.name === targetColor.name;
+    if (isCorrect) {
+      setScore(prev => prev + 10);
+      setTargetColor(colorsList[Math.floor(Math.random() * colorsList.length)]);
+    } else {
+      setScore(prev => Math.max(0, prev - 2));
+    }
+
+    setFloatingMath(prev => [...prev, { id: Math.random(), text: b.mathEq, x: b.x, y: b.y }]);
+    setTimeout(() => {
+      setFloatingMath(prev => prev.slice(1));
+    }, 1000);
+
+    setBalloons(prev => prev.filter(bl => bl.id !== b.id));
   };
 
   return (
-    <div className="flex flex-col bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden h-[450px] justify-between">
+    <div className="flex flex-col bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden h-[500px] justify-between">
       <div className="flex justify-between items-center z-10">
         <div>
           <h3 className="font-serif text-xl sm:text-2xl font-bold flex items-center gap-2 text-foreground">
-            🎈 Balloon Burst Zone
+            🎈 Smart Balloon Burst
           </h3>
-          <p className="text-xs text-muted-foreground">Pop the floating colorful balloons to hear happy melodies!</p>
+          <p className="text-xs text-muted-foreground">Pop balloons, learn colors & numbers!</p>
         </div>
-        <div className="bg-primary/10 border border-primary/20 px-3 py-1 rounded-full">
-          <span className="text-xs font-bold text-primary">Score: {score}</span>
+        <div className="bg-primary/10 border border-primary/20 px-3 py-1 rounded-full shadow-inner">
+          <span className="text-sm font-bold text-primary">Score: {score}</span>
         </div>
       </div>
 
-      <div className="flex-1 bg-background/50 border border-dashed border-border rounded-2xl relative overflow-hidden mt-4 min-h-[250px]">
+      <div className="flex-1 bg-gradient-to-b from-sky-50 to-white dark:from-sky-950/20 dark:to-background border border-dashed border-border rounded-2xl relative overflow-hidden mt-4 min-h-[250px] shadow-inner">
         {!isPlaying ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-background/90 z-20">
-            <span className="text-3xl sm:text-4xl animate-bounce">🎈</span>
-            <h4 className="font-serif text-lg font-bold">Pop & Sound Game</h4>
-            <p className="text-xs text-muted-foreground text-center px-6">Helps develop hand-eye coordination with cheerful, sensory audio feedback.</p>
-            <Button onClick={startGame} className="rounded-full px-6 bg-primary text-primary-foreground">Start Game</Button>
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-background/90 z-20 backdrop-blur-sm">
+            <motion.span animate={{ y: [0,-10,0] }} transition={{ repeat: Infinity, duration: 2 }} className="text-4xl sm:text-5xl">🎈</motion.span>
+            <h4 className="font-serif text-xl font-bold text-primary">Interactive Pop Math</h4>
+            <p className="text-xs sm:text-sm text-muted-foreground text-center px-6 max-w-sm">Enhances cognitive reflexes, color recognition, and basic arithmetic through multi-sensory feedback.</p>
+            <Button onClick={startGame} className="rounded-full px-8 py-5 font-bold tracking-wider uppercase text-xs shadow-lg hover:scale-105 transition-transform bg-primary text-primary-foreground">Start Learning Game</Button>
           </div>
         ) : (
-          <div className="absolute inset-0">
-            {balloons.map(b => (
-              <motion.button
-                key={b.id}
-                onClick={() => popBalloon(b.id)}
-                onTouchStart={() => popBalloon(b.id)}
-                className="absolute rounded-full shadow-lg cursor-pointer flex items-center justify-center border border-white/20 touch-manipulation z-10"
-                style={{
-                  left: `${b.x}%`,
-                  top: `${b.y}%`,
-                  width: b.size,
-                  height: b.size * 1.25,
-                  backgroundColor: b.color,
-                  borderRadius: '50% 50% 50% 50% / 40% 40% 60% 60%'
-                }}
-                whileTap={{ scale: 0.8 }}
-              >
-                <div className="w-1.5 h-1.5 bg-white/40 rounded-full absolute top-3 left-4" />
-                <div className="w-[1px] h-6 bg-foreground/30 absolute bottom-[-16px] left-[50%]" />
-              </motion.button>
-            ))}
-          </div>
+          <>
+            {targetColor && (
+              <div className="absolute top-2 left-1/2 -translate-x-1/2 bg-white dark:bg-card border-2 shadow-lg px-4 py-2 rounded-full z-20 flex items-center gap-2" style={{ borderColor: targetColor.color }}>
+                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Pop the</span>
+                <span className="text-sm font-black uppercase tracking-widest" style={{ color: targetColor.color }}>{targetColor.name}</span>
+                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Balloon!</span>
+              </div>
+            )}
+            
+            <div className="absolute inset-0 z-10">
+              {balloons.map(b => (
+                <motion.button
+                  key={b.id}
+                  onClick={() => popBalloon(b)}
+                  onTouchStart={() => popBalloon(b)}
+                  className="absolute rounded-full shadow-lg cursor-pointer flex items-center justify-center border border-white/30 touch-manipulation z-10 hover:brightness-110"
+                  style={{
+                    left: `${b.x}%`,
+                    top: `${b.y}%`,
+                    width: b.size,
+                    height: b.size * 1.25,
+                    backgroundColor: b.colorObj.color,
+                    borderRadius: '50% 50% 50% 50% / 40% 40% 60% 60%'
+                  }}
+                  whileTap={{ scale: 0.8 }}
+                >
+                  <div className="w-1.5 h-1.5 bg-white/50 rounded-full absolute top-3 left-4" />
+                  <div className="w-[1px] h-6 bg-foreground/30 absolute bottom-[-16px] left-[50%]" />
+                  <span className="text-[11px] font-bold text-white drop-shadow-md pointer-events-none mt-2">{b.mathEq.split('=')[0]} = ?</span>
+                </motion.button>
+              ))}
+              <AnimatePresence>
+                {floatingMath.map(fm => (
+                  <motion.div
+                    key={fm.id}
+                    initial={{ opacity: 1, y: fm.y, x: `${fm.x}%` }}
+                    animate={{ opacity: 0, y: fm.y - 15 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 1 }}
+                    className="absolute z-20 font-black text-lg text-primary drop-shadow-xl pointer-events-none"
+                    style={{ left: `${fm.x}%` }}
+                  >
+                    {fm.text}
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          </>
         )}
       </div>
 
       {isPlaying && (
-        <Button onClick={stopGame} variant="outline" className="rounded-full mt-4 self-center px-6 text-xs border-red-500 text-red-500 hover:bg-red-50 dark:hover:bg-red-950">Stop Game</Button>
+        <Button onClick={stopGame} variant="outline" className="rounded-full mt-4 self-center px-8 text-xs border-red-500 text-red-500 hover:bg-red-50 dark:hover:bg-red-950 font-bold uppercase tracking-wider">End Game</Button>
       )}
     </div>
   );
@@ -762,13 +859,24 @@ const SpecialCoursesList: Course[] = [
   { id: 1, title: "Level 1: Social Communication Catalyst", desc: "For Level 1 autism. Focuses on social nuances, organization, conversation initiation, and flexible thinking in group environments.", image: "https://images.unsplash.com/photo-1577896851231-70ef18881754?q=80&w=600", price: "$29.00", unlocked: true },
   { id: 2, title: "Level 2: Structured Visual Learning Journey", desc: "For Level 2 autism. Leverages robust visual schedules, TEACCH principles, and functional communication tools to enhance independence.", image: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?q=80&w=600", price: "$49.00", unlocked: false },
   { id: 3, title: "Level 3: Core Sensory & Speech Development", desc: "For Level 3 autism. Intensive, compassionate 1-on-1 care targeting sensory integration, low-tech AAC supports, and core emotional regulation.", image: "https://images.unsplash.com/photo-1484820540004-14229fe36ca4?q=80&w=600", price: "$79.00", unlocked: false },
-  { id: 4, title: "Parenting Autistic Children: A Practical Guide", desc: "Comprehensive caregiver training for positive behavioral support, burnout management, and creating customized sensory setups at home.", image: "https://images.unsplash.com/photo-1544027993-37dbfe43562a?q=80&w=600", price: "$39.00", unlocked: false }
+  { id: 4, title: "Parenting Autistic Children: A Practical Guide", desc: "Comprehensive caregiver training for positive behavioral support, burnout management, and creating customized sensory setups at home.", image: "https://images.unsplash.com/photo-1544027993-37dbfe43562a?q=80&w=600", price: "$39.00", unlocked: false },
+  { id: 5, title: "Music & Rhythm Sensory Therapy", desc: "Interactive rhythmic patterns designed to soothe auditory sensitivities and improve verbal pacing.", image: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?q=80&w=600", price: "$34.00", unlocked: false },
+  { id: 6, title: "Art Expression & Fine Motor Skills", desc: "Guided, low-pressure art classes that encourage non-verbal expression while building essential fine motor strength.", image: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?q=80&w=600", price: "$44.00", unlocked: false },
+  { id: 7, title: "Emotional Regulation & Breathing", desc: "Deep breathing, mindfulness, and gentle stretching routines adapted for sensory-sensitive children.", image: "https://images.unsplash.com/photo-1596464716127-f2a82984de30?q=80&w=600", price: "$24.00", unlocked: false },
+  { id: 8, title: "Life Skills: Transition & Independence", desc: "Practical workshops for teenagers focusing on personal hygiene, safe community navigation, and self-advocacy.", image: "https://images.unsplash.com/photo-1516534775068-ba3e7458af70?q=80&w=600", price: "$89.00", unlocked: false }
 ];
 
 function CourseCarousel() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [wishlist, setWishlist] = useState<number[]>([]);
   const [showPaywall, setShowPaywall] = useState<Course | null>(null);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentIndex(prev => (prev + 1) % SpecialCoursesList.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
 
   const handleNext = () => {
     setCurrentIndex(prev => (prev + 1) % SpecialCoursesList.length);
@@ -795,58 +903,90 @@ function CourseCarousel() {
   const curCourse = SpecialCoursesList[currentIndex];
 
   return (
-    <div className="bg-card border border-border rounded-3xl p-6 sm:p-8 md:p-12 shadow-2xl relative">
-      <div className="flex flex-col md:flex-row gap-8 items-center justify-between">
+    <div className="bg-card border border-border rounded-3xl p-6 sm:p-8 md:p-12 shadow-2xl relative overflow-hidden group/carousel">
+      {/* Premium Background Elements */}
+      <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full pointer-events-none translate-x-20 -translate-y-20 blur-2xl" />
+      <div className="absolute bottom-0 left-0 w-64 h-64 bg-secondary/5 rounded-full pointer-events-none -translate-x-20 translate-y-20 blur-2xl" />
+
+      <div className="flex flex-col md:flex-row gap-8 items-center justify-between relative z-10">
         
         <div className="w-full md:w-1/2 flex flex-col gap-6">
-          <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-md border border-border/50 group">
-            <img src={curCourse.image} alt={curCourse.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-            <div className="absolute top-4 right-4 z-10 flex gap-2">
-              <button
-                onClick={() => toggleWishlist(curCourse.id)}
-                className="p-2.5 rounded-full bg-background/80 backdrop-blur shadow hover:scale-110 active:scale-95 transition-all"
-              >
-                <HeartIcon className={`h-5 w-5 transition-colors ${wishlist.includes(curCourse.id) ? 'fill-red-500 text-red-500' : 'text-muted-foreground'}`} />
-              </button>
-            </div>
-            
-            {!curCourse.unlocked && (
-              <div className="absolute top-4 left-4 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1.5 shadow">
-                <Lock className="h-3 w-3" /> Locked
+          <AnimatePresence mode="wait">
+            <motion.div 
+              key={currentIndex}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.5, ease: "easeInOut" }}
+              className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-lg border border-border/50 group"
+            >
+              <div className="absolute inset-0 bg-black/10 z-0 group-hover:bg-black/0 transition-colors duration-500" />
+              <img src={curCourse.image} alt={curCourse.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+              
+              <div className="absolute top-4 right-4 z-10 flex gap-2">
+                <button
+                  onClick={() => toggleWishlist(curCourse.id)}
+                  className="p-2.5 rounded-full bg-white/90 backdrop-blur shadow-md hover:scale-110 active:scale-95 transition-all"
+                >
+                  <HeartIcon className={`h-5 w-5 transition-colors ${wishlist.includes(curCourse.id) ? 'fill-red-500 text-red-500' : 'text-gray-400 hover:text-red-400'}`} />
+                </button>
               </div>
-            )}
-            {curCourse.unlocked && (
-              <div className="absolute top-4 left-4 bg-emerald-500 text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1.5 shadow">
-                <Unlock className="h-3 w-3" /> Free Preview
-              </div>
-            )}
-          </div>
+              
+              {!curCourse.unlocked && (
+                <div className="absolute top-4 left-4 bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg backdrop-blur-md">
+                  <Lock className="h-3 w-3" /> Premium
+                </div>
+              )}
+              {curCourse.unlocked && (
+                <div className="absolute top-4 left-4 bg-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg backdrop-blur-md">
+                  <Unlock className="h-3 w-3" /> Free Preview
+                </div>
+              )}
+            </motion.div>
+          </AnimatePresence>
 
           <div className="flex gap-4 items-center justify-center md:justify-start">
-            <Button onClick={handlePrev} variant="outline" className="rounded-full h-11 w-11 p-0 flex items-center justify-center"><ArrowLeft className="h-5 w-5" /></Button>
-            <span className="text-sm font-semibold">{currentIndex + 1} / {SpecialCoursesList.length}</span>
-            <Button onClick={handleNext} variant="outline" className="rounded-full h-11 w-11 p-0 flex items-center justify-center"><ArrowRight className="h-5 w-5" /></Button>
+            <Button onClick={handlePrev} variant="outline" className="rounded-full h-12 w-12 p-0 flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors shadow-sm"><ArrowLeft className="h-5 w-5" /></Button>
+            <div className="flex gap-2">
+              {SpecialCoursesList.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentIndex(idx)}
+                  className={`h-2 rounded-full transition-all duration-300 ${currentIndex === idx ? 'w-6 bg-primary' : 'w-2 bg-primary/30 hover:bg-primary/50'}`}
+                />
+              ))}
+            </div>
+            <Button onClick={handleNext} variant="outline" className="rounded-full h-12 w-12 p-0 flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors shadow-sm"><ArrowRight className="h-5 w-5" /></Button>
           </div>
         </div>
 
         <div className="w-full md:w-1/2 flex flex-col gap-6">
-          <div className="space-y-3">
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-bold tracking-widest text-primary uppercase">Special Needs Academy</span>
-              <span className="text-sm font-bold text-foreground/80">{curCourse.price}</span>
-            </div>
-            <h3 className="font-serif text-2xl sm:text-3xl font-extrabold leading-tight">{curCourse.title}</h3>
-            <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">{curCourse.desc}</p>
-          </div>
+          <AnimatePresence mode="wait">
+            <motion.div 
+              key={currentIndex}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.5 }}
+              className="space-y-4"
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-xs font-black tracking-widest text-primary uppercase bg-primary/10 px-3 py-1 rounded-full">{curCourse.unlocked ? 'TRIAL' : 'CERTIFICATE'}</span>
+                <span className="text-lg font-black text-foreground/80 bg-foreground/5 px-3 py-1 rounded-full">{curCourse.price}</span>
+              </div>
+              <h3 className="font-serif text-3xl sm:text-4xl font-extrabold leading-tight">{curCourse.title}</h3>
+              <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">{curCourse.desc}</p>
+            </motion.div>
+          </AnimatePresence>
 
-          <div className="flex flex-wrap gap-4 border-t border-border pt-6">
+          <div className="flex flex-wrap gap-4 border-t border-border pt-6 mt-2">
             <Button
               onClick={() => triggerEnroll(curCourse)}
-              className={`rounded-none px-8 py-5 uppercase tracking-widest text-xs font-bold transition-all ${curCourse.unlocked ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-primary text-primary-foreground'}`}
+              className={`rounded-full px-8 py-6 uppercase tracking-widest text-xs font-black transition-all hover:scale-105 shadow-lg ${curCourse.unlocked ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-500/20' : 'bg-primary text-primary-foreground shadow-primary/20'}`}
             >
               {curCourse.unlocked ? "Start Free Preview" : "Enroll Now"}
             </Button>
-            <Button variant="outline" className="rounded-none border-foreground px-8 py-5 uppercase tracking-widest text-xs font-bold">
+            <Button variant="outline" className="rounded-full border-2 border-foreground px-8 py-6 uppercase tracking-widest text-xs font-black hover:bg-foreground hover:text-background transition-colors">
               Course Details
             </Button>
           </div>
@@ -854,10 +994,12 @@ function CourseCarousel() {
 
       </div>
 
-      <div className="mt-12 text-center border-t border-border/60 pt-8">
-        <Button variant="ghost" className="rounded-none hover:bg-transparent text-primary hover:text-primary/80 font-bold uppercase tracking-widest text-xs flex items-center gap-2 mx-auto">
-          Explore All Special Needs Courses <ArrowRight className="h-4 w-4" />
-        </Button>
+      <div className="mt-16 text-center pt-8">
+        <Link href="/courses#special-needs">
+          <a className="inline-flex items-center gap-2 group bg-card border-2 border-primary/20 hover:border-primary text-primary font-black uppercase tracking-widest text-xs px-8 py-4 rounded-full transition-all hover:shadow-lg hover:shadow-primary/10">
+            Explore All Special Needs Courses <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+          </a>
+        </Link>
       </div>
 
       <AnimatePresence>
@@ -1284,15 +1426,15 @@ export default function SpecialNeeds() {
           </motion.div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { title: "Art Class in Dhaka", img: "https://images.unsplash.com/photo-1460518451285-cd7bd7454c76?q=80&w=600" },
-              { title: "Sensory Playground Sydney", img: "https://images.unsplash.com/photo-1545624446-43a77d29293e?q=80&w=600" },
-              { title: "Parent Workshop Paris", img: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=600" },
-              { title: "Speech Therapy Class", img: "https://images.unsplash.com/photo-1577896851231-70ef18881754?q=80&w=600" }
+              { title: "Art Class in Dhaka", img: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?q=80&w=600" },
+              { title: "Sensory Playground Sydney", img: "https://images.unsplash.com/photo-1596464716127-f2a82984de30?q=80&w=600" },
+              { title: "Parent Workshop Paris", img: "https://images.unsplash.com/photo-1516534775068-ba3e7458af70?q=80&w=600" },
+              { title: "Speech Therapy Class", img: "https://images.unsplash.com/photo-1544027993-37dbfe43562a?q=80&w=600" }
             ].map((g, idx) => (
               <motion.div key={idx} {...fadeUp} transition={{ delay: idx * 0.1 }}
                 className="bg-card border border-border rounded-2xl overflow-hidden shadow-lg group cursor-pointer hover-lift">
                 <div className="aspect-[4/3] overflow-hidden">
-                  <img src={g.img} alt={g.title} className="w-full h-full object-cover transition-transform duration-750 group-hover:scale-105" />
+                  <img src={g.img} alt={g.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                 </div>
                 <div className="p-4 border-t border-border bg-card">
                   <h4 className="font-serif font-bold text-sm text-foreground">{g.title}</h4>

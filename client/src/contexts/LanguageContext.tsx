@@ -165,6 +165,10 @@ export const translations = {
     "footer.quickLinks": "Quick Links",
     "footer.email": "Email:",
     "footer.phone": "Phone:",
+    "footer.newsletter.title": "Stay Updated",
+    "footer.newsletter.desc": "Join our newsletter for the latest updates and exclusive content.",
+    "footer.newsletter.placeholder": "Enter your email address",
+    "footer.newsletter.subscribe": "Subscribe Now",
   },
   bn: {
     // Header
@@ -320,6 +324,10 @@ export const translations = {
     "footer.quickLinks": "কুইক লিংকস",
     "footer.email": "ইমেইল:",
     "footer.phone": "ফোন:",
+    "footer.newsletter.title": "আপডেট থাকুন",
+    "footer.newsletter.desc": "সর্বশেষ আপডেট এবং বিশেষ কনটেন্টের জন্য আমাদের নিউজলেটারে যোগ দিন।",
+    "footer.newsletter.placeholder": "আপনার ইমেইল ঠিকানা লিখুন",
+    "footer.newsletter.subscribe": "এখনই সাবস্ক্রাইব করুন",
   }
 };
 
