@@ -144,7 +144,8 @@ export default function Hero() {
               loop
               muted
               playsInline
-              preload="auto"
+              preload="metadata"
+              poster="/videos/logo-poster.webp"
               className="w-[140px] h-[140px] sm:w-[160px] sm:h-[160px] md:w-[200px] md:h-[200px] lg:w-[240px] lg:h-[240px] object-contain flex-shrink-0"
               style={{ mixBlendMode: 'multiply' }}
             >
@@ -192,10 +193,10 @@ export default function Hero() {
             loop
             muted
             playsInline
-            preload="auto"
+            preload="metadata"
             fetchPriority="high"
             className="h-full w-full object-cover"
-            poster="/images/hero/panel-1-texture.webp"
+            poster="/images/hero/hero-video-poster.webp"
           >
             <source src="/images/hero/hero-video.mp4" type="video/mp4" />
           </video>
