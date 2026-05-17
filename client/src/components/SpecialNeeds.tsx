@@ -5,6 +5,41 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Link } from "wouter";
 
+const heroImages = [
+  "https://images.unsplash.com/photo-1544027993-37dbfe43562a?q=80&w=1200",
+  "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?q=80&w=1200",
+  "https://images.unsplash.com/photo-1596464716127-f2a82984de30?q=80&w=1200",
+  "https://images.unsplash.com/photo-1576669801775-ff43c5ab079d?q=80&w=1200"
+];
+
+function HeroImageSlideshow() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % heroImages.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="absolute inset-0 w-full h-full overflow-hidden bg-emerald-100 dark:bg-emerald-950">
+      <AnimatePresence>
+        <motion.img
+          key={currentIndex}
+          src={heroImages[currentIndex]}
+          initial={{ opacity: 0, scale: 1.1 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 1.05 }}
+          transition={{ duration: 2, ease: "easeInOut" }}
+          className="absolute inset-0 w-full h-full object-cover"
+          alt="Happy special needs child engaging in sensory learning"
+        />
+      </AnimatePresence>
+    </div>
+  );
+}
+
 // ==========================================
 // 1. PREMIUM SYNTHESIZER & AUDIO GENERATOR
 // ==========================================
@@ -1330,13 +1365,8 @@ export default function SpecialNeeds() {
             whileHover={{ scale: 1.01, rotateY: -2, rotateX: 2 }}
           >
             {/* Aspect ratio changed to square/wide to prevent it from dropping too low vertically */}
-            <div className="relative aspect-square lg:aspect-[4/3] rounded-[3rem] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.15)] border-4 border-card bg-card">
-              <img
-                src="https://images.unsplash.com/photo-1544027993-37dbfe43562a?q=80&w=1200"
-                alt="Child engaging in specialized sensory learning"
-                className="w-full h-full object-cover transition-transform duration-[2s] hover:scale-105"
-                loading="lazy"
-              />
+            <div className="relative aspect-square lg:aspect-[4/3] rounded-[3rem] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.15)] border-4 border-card bg-card group">
+              <HeroImageSlideshow />
               <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent pointer-events-none" />
               
               {/* Elegant Interactive Hover Particles inside the image */}
