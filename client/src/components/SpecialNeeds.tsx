@@ -1,216 +1,1313 @@
-import { motion } from "framer-motion";
-import { Brain, Heart, Sparkles } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Brain, Heart, Sparkles, Star, Eye, Ear, Hand, Volume2, VolumeX, Music, Waves, TreePine, Bird, Sun, ArrowRight, Play, Pause, CheckCircle2, BookOpen, Users, Shield, Lightbulb, Target, ChevronDown, Phone, Mail, Lock, Unlock, ArrowLeft, Heart as HeartIcon, RefreshCw } from "lucide-react";
 import { Button } from "./ui/button";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
-export default function SpecialNeeds() {
-  const { t } = useLanguage();
-  const [isMuted, setIsMuted] = useState(true);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [videoLoaded, setVideoLoaded] = useState(false);
+// ==========================================
+// 1. PREMIUM SYNTHESIZER & AUDIO GENERATOR
+// ==========================================
+class CalmingSynthesizer {
+  private ctx: AudioContext | null = null;
+  private activeNodes: { osc?: AudioNode; gain?: GainNode; filter?: BiquadFilterNode; lfo?: OscillatorNode }[] = [];
+  private currentSoundName: string | null = null;
+
+  private initCtx() {
+    if (!this.ctx) {
+      this.ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+    if (this.ctx.state === 'suspended') {
+      this.ctx.resume();
+    }
+  }
+
+  stopAll() {
+    this.activeNodes.forEach(node => {
+      try {
+        if (node.lfo) node.lfo.stop();
+        if (node.osc && (node.osc as any).stop) (node.osc as any).stop();
+      } catch (e) {
+        // Already stopped
+      }
+    });
+    this.activeNodes = [];
+    this.currentSoundName = null;
+  }
+
+  getCurrentSound() {
+    return this.currentSoundName;
+  }
+
+  playOcean() {
+    this.initCtx();
+    this.stopAll();
+    if (!this.ctx) return;
+
+    this.currentSoundName = "ocean";
+
+    const bufferSize = this.ctx.sampleRate * 5;
+    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = Math.random() * 2 - 1;
+    }
+
+    const noiseNode = this.ctx.createBufferSource();
+    noiseNode.buffer = buffer;
+    noiseNode.loop = true;
+
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.Q.value = 1.0;
+
+    const lfo = this.ctx.createOscillator();
+    lfo.frequency.value = 0.08; 
+    
+    const lfoGain = this.ctx.createGain();
+    lfoGain.gain.value = 400;
+
+    const gain = this.ctx.createGain();
+    gain.gain.value = 0.001;
+
+    lfo.connect(lfoGain);
+    lfoGain.connect(filter.frequency);
+    noiseNode.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.ctx.destination);
+
+    filter.frequency.value = 450;
+
+    lfo.start();
+    noiseNode.start();
+
+    gain.gain.exponentialRampToValueAtTime(0.2, this.ctx.currentTime + 2);
+
+    this.activeNodes.push({ osc: noiseNode, gain, filter, lfo });
+  }
+
+  playWind() {
+    this.initCtx();
+    this.stopAll();
+    if (!this.ctx) return;
+
+    this.currentSoundName = "wind";
+
+    const bufferSize = this.ctx.sampleRate * 4;
+    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+    for (let i = 0; i < bufferSize; i++) {
+      const white = Math.random() * 2 - 1;
+      b0 = 0.99886 * b0 + white * 0.0555179;
+      b1 = 0.99332 * b1 + white * 0.0750759;
+      b2 = 0.96900 * b2 + white * 0.1538520;
+      b3 = 0.86650 * b3 + white * 0.3104856;
+      b4 = 0.55000 * b4 + white * 0.5329522;
+      b5 = -0.7616 * b5 - white * 0.0168980;
+      data[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
+      data[i] *= 0.11;
+      b6 = white * 0.115926;
+    }
+
+    const noiseNode = this.ctx.createBufferSource();
+    noiseNode.buffer = buffer;
+    noiseNode.loop = true;
+
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.Q.value = 2.0;
+
+    const lfo = this.ctx.createOscillator();
+    lfo.frequency.value = 0.15;
+
+    const lfoGain = this.ctx.createGain();
+    lfoGain.gain.value = 250;
+
+    const gain = this.ctx.createGain();
+    gain.gain.value = 0.001;
+
+    lfo.connect(lfoGain);
+    lfoGain.connect(filter.frequency);
+    noiseNode.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.ctx.destination);
+
+    filter.frequency.value = 350;
+
+    lfo.start();
+    noiseNode.start();
+
+    gain.gain.exponentialRampToValueAtTime(0.25, this.ctx.currentTime + 1.5);
+
+    this.activeNodes.push({ osc: noiseNode, gain, filter, lfo });
+  }
+
+  playHarp() {
+    this.initCtx();
+    this.stopAll();
+    if (!this.ctx) return;
+
+    this.currentSoundName = "harp";
+
+    const pentatonicScale = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33, 659.25];
+    let currentNoteIndex = 0;
+
+    const scheduleNextNote = () => {
+      if (this.currentSoundName !== "harp" || !this.ctx) return;
+
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      const filter = this.ctx.createBiquadFilter();
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(pentatonicScale[currentNoteIndex], this.ctx.currentTime);
+      
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(1000, this.ctx.currentTime);
+      filter.frequency.exponentialRampToValueAtTime(200, this.ctx.currentTime + 0.8);
+
+      gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 1.2);
+
+      osc.connect(filter).connect(gain).connect(this.ctx.destination);
+      osc.start();
+      osc.stop(this.ctx.currentTime + 1.3);
+
+      this.activeNodes.push({ osc, gain, filter });
+
+      const step = Math.random() > 0.5 ? 1 : -1;
+      currentNoteIndex = (currentNoteIndex + step + pentatonicScale.length) % pentatonicScale.length;
+
+      const nextDelay = 1200 + Math.random() * 600;
+      setTimeout(scheduleNextNote, nextDelay);
+    };
+
+    scheduleNextNote();
+  }
+
+  playBirds() {
+    this.initCtx();
+    this.stopAll();
+    if (!this.ctx) return;
+
+    this.currentSoundName = "birds";
+
+    const scheduleBirdChirp = () => {
+      if (this.currentSoundName !== "birds" || !this.ctx) return;
+
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'sine';
+      
+      const now = this.ctx.currentTime;
+      const baseFreq = 2200 + Math.random() * 600;
+      osc.frequency.setValueAtTime(baseFreq, now);
+      osc.frequency.exponentialRampToValueAtTime(baseFreq - 800, now + 0.15);
+
+      gain.gain.setValueAtTime(0.06, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+
+      osc.connect(gain).connect(this.ctx.destination);
+      osc.start();
+      osc.stop(now + 0.2);
+
+      this.activeNodes.push({ osc, gain });
+
+      const nextChirp = 300 + Math.random() * 2500;
+      setTimeout(scheduleBirdChirp, nextChirp);
+    };
+
+    scheduleBirdChirp();
+  }
+}
+
+const synth = new CalmingSynthesizer();
+
+// ==========================================
+// 2. BREATHING GLOWING LOTUS COMPONENT
+// ==========================================
+function BreathingZone() {
+  const [phase, setPhase] = useState<'idle' | 'inhale' | 'hold' | 'exhale'>('idle');
+  const [counter, setCounter] = useState(4);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const startBreathing = () => {
+    if (phase !== 'idle') {
+      if (timerRef.current) clearInterval(timerRef.current);
+      setPhase('idle');
+      return;
+    }
+    setPhase('inhale');
+    setCounter(4);
+  };
 
   useEffect(() => {
-    // Force autoplay when component mounts
-    if (videoRef.current) {
-      videoRef.current.defaultMuted = true;
-      videoRef.current.muted = true;
+    if (phase === 'idle') return;
 
-      const playVideo = () => {
-        videoRef.current?.play().catch(e => console.log("Autoplay failed:", e));
-      };
+    if (timerRef.current) clearInterval(timerRef.current);
 
-      playVideo();
+    timerRef.current = setInterval(() => {
+      setCounter(prev => {
+        if (prev <= 1) {
+          if (phase === 'inhale') {
+            setPhase('hold');
+            return 3;
+          } else if (phase === 'hold') {
+            setPhase('exhale');
+            return 4;
+          } else {
+            setPhase('inhale');
+            return 4;
+          }
+        }
+        return prev - 1;
+      });
+    }, 1000);
 
-      // Double check after a small delay to handle hydration/loading capability
-      const timer = setTimeout(playVideo, 1000);
-      return () => clearTimeout(timer);
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [phase]);
+
+  const getCircleStyles = () => {
+    switch (phase) {
+      case 'inhale':
+        return { scale: 1.5, bg: 'rgba(56, 189, 248, 0.4)', border: '#38bdf8', text: 'Breathe In' };
+      case 'hold':
+        return { scale: 1.5, bg: 'rgba(192, 132, 252, 0.4)', border: '#c084fc', text: 'Hold Breath' };
+      case 'exhale':
+        return { scale: 1.0, bg: 'rgba(52, 211, 153, 0.4)', border: '#34d399', text: 'Breathe Out' };
+      default:
+        return { scale: 1.0, bg: 'rgba(100, 116, 139, 0.1)', border: 'var(--border)', text: 'Tap to Start' };
     }
+  };
+
+  const style = getCircleStyles();
+
+  return (
+    <div className="flex flex-col items-center justify-center p-8 bg-card border border-border rounded-3xl relative overflow-hidden shadow-2xl h-full min-h-[380px]">
+      <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
+      <h3 className="font-serif text-xl sm:text-2xl font-bold mb-8 flex items-center gap-2 text-foreground">
+        <Sparkles className="h-5 w-5 text-primary animate-pulse" /> Calming Breathing Sphere
+      </h3>
+
+      <div className="relative w-44 h-44 sm:w-52 sm:h-52 flex items-center justify-center">
+        <AnimatePresence>
+          {phase !== 'idle' && (
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0.5 }}
+              animate={{ scale: style.scale * 1.3, opacity: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ repeat: Infinity, duration: phase === 'hold' ? 3 : 4, ease: "easeOut" }}
+              className="absolute inset-0 rounded-full pointer-events-none"
+              style={{ backgroundColor: style.bg }}
+            />
+          )}
+        </AnimatePresence>
+
+        <motion.button
+          onClick={startBreathing}
+          animate={{ scale: style.scale }}
+          transition={{ duration: phase === 'hold' ? 0.5 : 4, ease: "easeInOut" }}
+          className="w-32 h-32 sm:w-40 sm:h-40 rounded-full flex flex-col items-center justify-center shadow-lg border-4 transition-colors duration-500 relative z-10 touch-manipulation"
+          style={{ backgroundColor: style.bg, borderColor: style.border }}
+        >
+          <span className="text-sm sm:text-base font-bold text-foreground drop-shadow">{style.text}</span>
+          {phase !== 'idle' && (
+            <motion.span
+              key={counter}
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="text-2xl sm:text-3xl font-extrabold mt-1 text-foreground"
+            >
+              {counter}
+            </motion.span>
+          )}
+        </motion.button>
+      </div>
+
+      <p className="text-xs sm:text-sm text-muted-foreground mt-8 text-center px-4 leading-relaxed">
+        {phase === 'idle'
+          ? "Click the sphere to start a guided 4-3-4 breathing exercise tailored to help soothe sensory overload."
+          : `Phase active: ${phase.toUpperCase()} — Relax your body.`}
+      </p>
+    </div>
+  );
+}
+
+// ==========================================
+// 3. INTERACTIVE SHATTER-PARTICLE CANVAS
+// ==========================================
+function InteractiveShatterZone() {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [currentColor, setCurrentColor] = useState('#3b82f6');
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let animationFrameId: number;
+    let particles: { x: number; y: number; vx: number; vy: number; r: number; color: string; alpha: number }[] = [];
+
+    const handleResize = () => {
+      if (containerRef.current && canvas) {
+        canvas.width = containerRef.current.clientWidth;
+        canvas.height = 300;
+      }
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+
+    const spawnParticles = (x: number, y: number, color: string) => {
+      try {
+        const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(300 + Math.random() * 400, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+        osc.connect(gain).connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.35);
+      } catch (e) {}
+
+      for (let i = 0; i < 24; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 1 + Math.random() * 4;
+        particles.push({
+          x,
+          y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          r: 3 + Math.random() * 5,
+          color,
+          alpha: 1
+        });
+      }
+    };
+
+    const handleInteraction = (e: MouseEvent | TouchEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      let clientX = 0;
+      let clientY = 0;
+
+      if ('touches' in e) {
+        if (e.touches.length === 0) return;
+        clientX = e.touches[0].clientX;
+        clientY = e.touches[0].clientY;
+      } else {
+        clientX = e.clientX;
+        clientY = e.clientY;
+      }
+
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+      spawnParticles(x, y, currentColor);
+    };
+
+    canvas.addEventListener('click', handleInteraction);
+    canvas.addEventListener('touchstart', handleInteraction, { passive: true });
+
+    const render = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      ctx.font = 'normal 14px Outfit, sans-serif';
+      ctx.fillStyle = 'rgba(156, 163, 175, 0.4)';
+      ctx.textAlign = 'center';
+      ctx.fillText('Tap / Touch Anywhere on this Canvas', canvas.width / 2, canvas.height / 2);
+
+      particles.forEach((p, idx) => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.alpha -= 0.02;
+        if (p.alpha <= 0) {
+          particles.splice(idx, 1);
+          return;
+        }
+        ctx.save();
+        ctx.globalAlpha = p.alpha;
+        ctx.fillStyle = p.color;
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      });
+
+      animationFrameId = requestAnimationFrame(render);
+    };
+
+    render();
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (canvas) {
+        canvas.removeEventListener('click', handleInteraction);
+        canvas.removeEventListener('touchstart', handleInteraction);
+      }
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, [currentColor]);
+
+  const palette = [
+    { color: '#3b82f6', label: 'Sky' },
+    { color: '#10b981', label: 'Flora' },
+    { color: '#a855f7', label: 'Magic' },
+    { color: '#f59e0b', label: 'Sun' },
+    { color: '#f43f5e', label: 'Love' },
+  ];
+
+  return (
+    <div ref={containerRef} className="flex flex-col bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-2xl h-full justify-between">
+      <div>
+        <h3 className="font-serif text-xl sm:text-2xl font-bold mb-3 flex items-center gap-2 text-foreground">
+          <Eye className="h-5 w-5 text-primary animate-pulse" /> Sensory Particle Canvas
+        </h3>
+        <p className="text-xs sm:text-sm text-muted-foreground mb-6">
+          A dynamic, bork-free particle playground. Choose a relaxing tone palette, then tap inside the field to build magical musical bursts.
+        </p>
+      </div>
+
+      <div className="border border-dashed border-border/80 rounded-2xl overflow-hidden bg-background/50 relative h-[300px]">
+        <canvas ref={canvasRef} className="w-full h-full block cursor-crosshair" />
+      </div>
+
+      <div className="flex flex-wrap gap-2 mt-6 justify-center">
+        {palette.map((p, i) => (
+          <button
+            key={i}
+            onClick={() => setCurrentColor(p.color)}
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold border-2 transition-all active:scale-95 ${currentColor === p.color ? 'border-foreground shadow-md' : 'border-transparent'}`}
+            style={{ backgroundColor: p.color, color: '#fff' }}
+          >
+            {p.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ==========================================
+// 4. BALOON POPPING & PLAYFUL GAME ZONE
+// ==========================================
+function BalloonPopGame() {
+  const [score, setScore] = useState(0);
+  const [balloons, setBalloons] = useState<{ id: number; x: number; size: number; color: string; speed: number; y: number }[]>([]);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  const colors = ['#f43f5e', '#3b82f6', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6'];
+
+  const startGame = () => {
+    setIsPlaying(true);
+    setScore(0);
+    setBalloons([]);
+  };
+
+  const stopGame = () => {
+    setIsPlaying(false);
+  };
+
+  useEffect(() => {
+    if (!isPlaying) return;
+
+    const spawner = setInterval(() => {
+      setBalloons(prev => [
+        ...prev,
+        {
+          id: Math.random(),
+          x: 10 + Math.random() * 80,
+          y: 110,
+          size: 45 + Math.random() * 30,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          speed: 1.0 + Math.random() * 1.5
+        }
+      ]);
+    }, 1200);
+
+    const floater = setInterval(() => {
+      setBalloons(prev =>
+        prev
+          .map(b => ({ ...b, y: b.y - b.speed }))
+          .filter(b => b.y > -20)
+      );
+    }, 30);
+
+    return () => {
+      clearInterval(spawner);
+      clearInterval(floater);
+    };
+  }, [isPlaying]);
+
+  const popBalloon = (id: number) => {
+    try {
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(600 + Math.random() * 300, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.15);
+    } catch (e) {}
+
+    setScore(prev => prev + 1);
+    setBalloons(prev => prev.filter(b => b.id !== id));
+  };
+
+  return (
+    <div className="flex flex-col bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden h-[450px] justify-between">
+      <div className="flex justify-between items-center z-10">
+        <div>
+          <h3 className="font-serif text-xl sm:text-2xl font-bold flex items-center gap-2 text-foreground">
+            🎈 Balloon Burst Zone
+          </h3>
+          <p className="text-xs text-muted-foreground">Pop the floating colorful balloons to hear happy melodies!</p>
+        </div>
+        <div className="bg-primary/10 border border-primary/20 px-3 py-1 rounded-full">
+          <span className="text-xs font-bold text-primary">Score: {score}</span>
+        </div>
+      </div>
+
+      <div className="flex-1 bg-background/50 border border-dashed border-border rounded-2xl relative overflow-hidden mt-4 min-h-[250px]">
+        {!isPlaying ? (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-background/90 z-20">
+            <span className="text-3xl sm:text-4xl animate-bounce">🎈</span>
+            <h4 className="font-serif text-lg font-bold">Pop & Sound Game</h4>
+            <p className="text-xs text-muted-foreground text-center px-6">Helps develop hand-eye coordination with cheerful, sensory audio feedback.</p>
+            <Button onClick={startGame} className="rounded-full px-6 bg-primary text-primary-foreground">Start Game</Button>
+          </div>
+        ) : (
+          <div className="absolute inset-0">
+            {balloons.map(b => (
+              <motion.button
+                key={b.id}
+                onClick={() => popBalloon(b.id)}
+                onTouchStart={() => popBalloon(b.id)}
+                className="absolute rounded-full shadow-lg cursor-pointer flex items-center justify-center border border-white/20 touch-manipulation z-10"
+                style={{
+                  left: `${b.x}%`,
+                  top: `${b.y}%`,
+                  width: b.size,
+                  height: b.size * 1.25,
+                  backgroundColor: b.color,
+                  borderRadius: '50% 50% 50% 50% / 40% 40% 60% 60%'
+                }}
+                whileTap={{ scale: 0.8 }}
+              >
+                <div className="w-1.5 h-1.5 bg-white/40 rounded-full absolute top-3 left-4" />
+                <div className="w-[1px] h-6 bg-foreground/30 absolute bottom-[-16px] left-[50%]" />
+              </motion.button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {isPlaying && (
+        <Button onClick={stopGame} variant="outline" className="rounded-full mt-4 self-center px-6 text-xs border-red-500 text-red-500 hover:bg-red-50 dark:hover:bg-red-950">Stop Game</Button>
+      )}
+    </div>
+  );
+}
+
+// ==========================================
+// 5. MEMORY SOUNDS PAIRS GAME
+// ==========================================
+function MemorySoundGame() {
+  const [cards, setCards] = useState<{ id: number; freq: number; flipped: boolean; matched: boolean }[]>([]);
+  const [selected, setSelected] = useState<number[]>([]);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [turns, setTurns] = useState(0);
+
+  const notes = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00];
+
+  const initGame = () => {
+    const list = [...notes, ...notes]
+      .map((freq, idx) => ({ id: idx, freq, flipped: false, matched: false }))
+      .sort(() => Math.random() - 0.5);
+    setCards(list);
+    setSelected([]);
+    setTurns(0);
+    setIsPlaying(true);
+  };
+
+  const playFreq = (freq: number) => {
+    try {
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.45);
+    } catch (e) {}
+  };
+
+  const selectCard = (idx: number) => {
+    if (cards[idx].flipped || cards[idx].matched || selected.length >= 2) return;
+
+    playFreq(cards[idx].freq);
+
+    const newCards = [...cards];
+    newCards[idx].flipped = true;
+    setCards(newCards);
+
+    const newSelected = [...selected, idx];
+    setSelected(newSelected);
+
+    if (newSelected.length === 2) {
+      setTurns(prev => prev + 1);
+      const [first, second] = newSelected;
+      if (cards[first].freq === cards[second].freq) {
+        setTimeout(() => {
+          const matchedCards = [...cards];
+          matchedCards[first].matched = true;
+          matchedCards[second].matched = true;
+          setCards(matchedCards);
+          setSelected([]);
+        }, 500);
+      } else {
+        setTimeout(() => {
+          const resetCards = [...cards];
+          resetCards[first].flipped = false;
+          resetCards[second].flipped = false;
+          setCards(resetCards);
+          setSelected([]);
+        }, 1000);
+      }
+    }
+  };
+
+  const won = cards.length > 0 && cards.every(c => c.matched);
+
+  return (
+    <div className="flex flex-col bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden h-[450px] justify-between">
+      <div className="flex justify-between items-center z-10">
+        <div>
+          <h3 className="font-serif text-xl sm:text-2xl font-bold flex items-center gap-2 text-foreground">
+            🧩 Sound Memory Match
+          </h3>
+          <p className="text-xs text-muted-foreground">Match the hidden cards by their beautiful musical tones!</p>
+        </div>
+        <div className="bg-primary/10 border border-primary/20 px-3 py-1 rounded-full">
+          <span className="text-xs font-bold text-primary">Turns: {turns}</span>
+        </div>
+      </div>
+
+      <div className="flex-1 border border-dashed border-border rounded-2xl bg-background/50 flex items-center justify-center p-4 mt-4 relative">
+        {!isPlaying ? (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-background/95 rounded-2xl z-20">
+            <span className="text-3xl sm:text-4xl animate-pulse">🎹</span>
+            <h4 className="font-serif text-lg font-bold">Sound Matcher</h4>
+            <p className="text-xs text-muted-foreground text-center px-8">Improves cognitive retention and pattern discrimination through warm tones.</p>
+            <Button onClick={initGame} className="rounded-full px-6 bg-primary text-primary-foreground">Start Game</Button>
+          </div>
+        ) : won ? (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-background/95 rounded-2xl z-20">
+            <span className="text-4xl animate-bounce">🏆</span>
+            <h4 className="font-serif text-xl font-bold text-primary">Wonderful Job!</h4>
+            <p className="text-xs text-muted-foreground">You matched all the notes in {turns} turns.</p>
+            <Button onClick={initGame} className="rounded-full px-6 bg-primary text-primary-foreground">Play Again</Button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-4 gap-3 w-full max-w-xs">
+            {cards.map((c, i) => (
+              <motion.button
+                key={c.id}
+                onClick={() => selectCard(i)}
+                className={`aspect-square rounded-xl flex items-center justify-center text-xl font-bold shadow transition-all border-2 touch-manipulation ${c.matched ? 'bg-emerald-100 dark:bg-emerald-950/30 border-emerald-500 text-emerald-600' : c.flipped ? 'bg-primary/10 border-primary text-primary' : 'bg-card border-border hover:border-primary/50'}`}
+                whileTap={{ scale: 0.93 }}
+              >
+                {c.matched ? '🎵' : c.flipped ? '🔊' : '?'}
+              </motion.button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {isPlaying && !won && (
+        <Button onClick={initGame} variant="outline" className="rounded-full mt-4 self-center px-6 text-xs gap-1 border-primary text-primary"><RefreshCw className="h-3 w-3" /> Restart</Button>
+      )}
+    </div>
+  );
+}
+
+// ==========================================
+// 5. SPECIAL NEEDS COURSES INFINITE CAROUSEL
+// ==========================================
+interface Course {
+  id: number;
+  title: string;
+  desc: string;
+  image: string;
+  price: string;
+  unlocked: boolean;
+}
+
+const SpecialCoursesList: Course[] = [
+  { id: 1, title: "Level 1: Social Communication Catalyst", desc: "For Level 1 autism. Focuses on social nuances, organization, conversation initiation, and flexible thinking in group environments.", image: "https://images.unsplash.com/photo-1577896851231-70ef18881754?q=80&w=600", price: "$29.00", unlocked: true },
+  { id: 2, title: "Level 2: Structured Visual Learning Journey", desc: "For Level 2 autism. Leverages robust visual schedules, TEACCH principles, and functional communication tools to enhance independence.", image: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?q=80&w=600", price: "$49.00", unlocked: false },
+  { id: 3, title: "Level 3: Core Sensory & Speech Development", desc: "For Level 3 autism. Intensive, compassionate 1-on-1 care targeting sensory integration, low-tech AAC supports, and core emotional regulation.", image: "https://images.unsplash.com/photo-1484820540004-14229fe36ca4?q=80&w=600", price: "$79.00", unlocked: false },
+  { id: 4, title: "Parenting Autistic Children: A Practical Guide", desc: "Comprehensive caregiver training for positive behavioral support, burnout management, and creating customized sensory setups at home.", image: "https://images.unsplash.com/photo-1544027993-37dbfe43562a?q=80&w=600", price: "$39.00", unlocked: false }
+];
+
+function CourseCarousel() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [wishlist, setWishlist] = useState<number[]>([]);
+  const [showPaywall, setShowPaywall] = useState<Course | null>(null);
+
+  const handleNext = () => {
+    setCurrentIndex(prev => (prev + 1) % SpecialCoursesList.length);
+  };
+
+  const handlePrev = () => {
+    setCurrentIndex(prev => (prev - 1 + SpecialCoursesList.length) % SpecialCoursesList.length);
+  };
+
+  const toggleWishlist = (id: number) => {
+    setWishlist(prev =>
+      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+    );
+  };
+
+  const triggerEnroll = (course: Course) => {
+    if (!course.unlocked) {
+      setShowPaywall(course);
+    } else {
+      alert("Successfully enrolled in free preview preview class!");
+    }
+  };
+
+  const curCourse = SpecialCoursesList[currentIndex];
+
+  return (
+    <div className="bg-card border border-border rounded-3xl p-6 sm:p-8 md:p-12 shadow-2xl relative">
+      <div className="flex flex-col md:flex-row gap-8 items-center justify-between">
+        
+        <div className="w-full md:w-1/2 flex flex-col gap-6">
+          <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-md border border-border/50 group">
+            <img src={curCourse.image} alt={curCourse.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+            <div className="absolute top-4 right-4 z-10 flex gap-2">
+              <button
+                onClick={() => toggleWishlist(curCourse.id)}
+                className="p-2.5 rounded-full bg-background/80 backdrop-blur shadow hover:scale-110 active:scale-95 transition-all"
+              >
+                <HeartIcon className={`h-5 w-5 transition-colors ${wishlist.includes(curCourse.id) ? 'fill-red-500 text-red-500' : 'text-muted-foreground'}`} />
+              </button>
+            </div>
+            
+            {!curCourse.unlocked && (
+              <div className="absolute top-4 left-4 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1.5 shadow">
+                <Lock className="h-3 w-3" /> Locked
+              </div>
+            )}
+            {curCourse.unlocked && (
+              <div className="absolute top-4 left-4 bg-emerald-500 text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1.5 shadow">
+                <Unlock className="h-3 w-3" /> Free Preview
+              </div>
+            )}
+          </div>
+
+          <div className="flex gap-4 items-center justify-center md:justify-start">
+            <Button onClick={handlePrev} variant="outline" className="rounded-full h-11 w-11 p-0 flex items-center justify-center"><ArrowLeft className="h-5 w-5" /></Button>
+            <span className="text-sm font-semibold">{currentIndex + 1} / {SpecialCoursesList.length}</span>
+            <Button onClick={handleNext} variant="outline" className="rounded-full h-11 w-11 p-0 flex items-center justify-center"><ArrowRight className="h-5 w-5" /></Button>
+          </div>
+        </div>
+
+        <div className="w-full md:w-1/2 flex flex-col gap-6">
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-bold tracking-widest text-primary uppercase">Special Needs Academy</span>
+              <span className="text-sm font-bold text-foreground/80">{curCourse.price}</span>
+            </div>
+            <h3 className="font-serif text-2xl sm:text-3xl font-extrabold leading-tight">{curCourse.title}</h3>
+            <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">{curCourse.desc}</p>
+          </div>
+
+          <div className="flex flex-wrap gap-4 border-t border-border pt-6">
+            <Button
+              onClick={() => triggerEnroll(curCourse)}
+              className={`rounded-none px-8 py-5 uppercase tracking-widest text-xs font-bold transition-all ${curCourse.unlocked ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-primary text-primary-foreground'}`}
+            >
+              {curCourse.unlocked ? "Start Free Preview" : "Enroll Now"}
+            </Button>
+            <Button variant="outline" className="rounded-none border-foreground px-8 py-5 uppercase tracking-widest text-xs font-bold">
+              Course Details
+            </Button>
+          </div>
+        </div>
+
+      </div>
+
+      <div className="mt-12 text-center border-t border-border/60 pt-8">
+        <Button variant="ghost" className="rounded-none hover:bg-transparent text-primary hover:text-primary/80 font-bold uppercase tracking-widest text-xs flex items-center gap-2 mx-auto">
+          Explore All Special Needs Courses <ArrowRight className="h-4 w-4" />
+        </Button>
+      </div>
+
+      <AnimatePresence>
+        {showPaywall && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-background/80 backdrop-blur-md flex items-center justify-center p-4 z-[999]"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-card border border-border rounded-3xl p-8 max-w-md w-full relative shadow-2xl"
+            >
+              <div className="text-center space-y-4">
+                <div className="w-16 h-16 bg-red-100 dark:bg-red-950/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Lock className="h-8 w-8 text-red-500" />
+                </div>
+                <h4 className="font-serif text-xl sm:text-2xl font-bold">Premium Course Locked</h4>
+                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                  The course <strong className="text-foreground">"{showPaywall.title}"</strong> is protected behind a premium security paywall. Register or log in to a parent/student account with premium billing options to unlock access.
+                </p>
+                <div className="pt-4 flex flex-col gap-3">
+                  <Button className="w-full py-5 rounded-none uppercase tracking-widest text-xs font-bold">Upgrade Account</Button>
+                  <Button onClick={() => setShowPaywall(null)} variant="ghost" className="w-full text-muted-foreground hover:text-foreground text-xs uppercase tracking-widest">Close</Button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ==========================================
+// 6. PARENT TESTIMONIALS SECTION
+// ==========================================
+interface Testimonial {
+  quote: string;
+  name: string;
+  role: string;
+  flag: string;
+}
+
+const ParentTestimonialsList: Testimonial[] = [
+  { quote: "Our son Aryan (Level 2) was practically non-verbal at 4. After a year of customized visual therapies and IEP milestones at AIM Centre, he now speaks in full sentences and loves sharing his feelings. Absolute miracle!", name: "Anika Chowdhury", role: "Mother of Aryan — Dhaka, Bangladesh", flag: "🇧🇩" },
+  { quote: "Sensory processing overload made public parks a nightmare for Mia. The occupational therapists here taught her emotional regulation and built her confidence from scratch. Deepest thanks!", name: "Dr. Sarah Jenkins", role: "Mother of Mia — Sydney, Australia", flag: "🇦🇺" },
+  { quote: "We were lost trying to understand our daughter's Level 3 autistic meltdowns. The family training workshops and customized IEP setups changed everything. We are now closer than ever.", name: "Tariqul Islam", role: "Father of Raisa — Sylhet, Bangladesh", flag: "🇧🇩" },
+  { quote: "Autism Level 1 was tough due to school bullying. AIM Centre's social communication groups gave Leo the confidence and strategies he needed. He now has true friends and a bright smile.", name: "Marc Dupond", role: "Father of Leo — Paris, France", flag: "🇫🇷" }
+];
+
+function PremiumParentTestimonials() {
+  const [activeIdx, setActiveIdx] = useState(0);
+
+  useEffect(() => {
+    const loop = setInterval(() => {
+      setActiveIdx(prev => (prev + 1) % ParentTestimonialsList.length);
+    }, 6000);
+    return () => clearInterval(loop);
+  }, []);
+
+  const cur = ParentTestimonialsList[activeIdx];
+
+  return (
+    <div className="bg-gradient-to-r from-primary to-primary/95 text-primary-foreground rounded-3xl p-8 sm:p-12 md:p-16 shadow-2xl relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full pointer-events-none translate-x-20 -translate-y-20 blur-xl" />
+      <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/5 rounded-full pointer-events-none -translate-x-20 translate-y-20 blur-xl" />
+
+      <div className="relative z-10 max-w-3xl mx-auto text-center space-y-6">
+        <span className="text-xs font-bold uppercase tracking-[0.3em] text-primary-foreground/75">Global Testimonials</span>
+        <div className="text-4xl sm:text-5xl font-serif text-primary-foreground/30">“</div>
+        
+        <AnimatePresence mode="wait">
+          <motion.p
+            key={activeIdx}
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ duration: 0.5 }}
+            className="font-serif text-lg sm:text-xl md:text-2xl italic leading-relaxed font-light"
+          >
+            {cur.quote}
+          </motion.p>
+        </AnimatePresence>
+
+        <div className="text-2xl sm:text-3xl font-serif text-primary-foreground/30">”</div>
+        
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeIdx}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="space-y-1.5"
+          >
+            <p className="font-bold text-base sm:text-lg">{cur.name} {cur.flag}</p>
+            <p className="text-xs sm:text-sm text-primary-foreground/75">{cur.role}</p>
+          </motion.div>
+        </AnimatePresence>
+
+        <div className="flex gap-2 justify-center pt-6">
+          {ParentTestimonialsList.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => setActiveIdx(idx)}
+              className={`h-2 rounded-full transition-all duration-300 ${activeIdx === idx ? 'w-6 bg-white' : 'w-2 bg-white/40'}`}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ==========================================
+// 7. INTERACTIVE AUTISM LEVELS SECTION
+// ==========================================
+function AutismLevelsTabs() {
+  const [activeLevel, setActiveLevel] = useState(1);
+
+  const levels = [
+    {
+      num: 1,
+      title: "Autism Level 1: Requiring Support",
+      symptoms: [
+        "Difficulty initiating social interactions and conversation",
+        "Atypical or unsuccessful responses to social overtures",
+        "Difficulty with planning, organization, and transition between tasks",
+        "Rigid behavior causing significant interference with daily functions"
+      ],
+      approach: "Focused social communication groups, cognitive organizational strategies, cognitive flexibility reinforcement, and low-intensity behavioral therapy.",
+      color: "border-emerald-500",
+      accent: "text-emerald-500",
+      badge: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-400"
+    },
+    {
+      num: 2,
+      title: "Autism Level 2: Requiring Substantial Support",
+      symptoms: [
+        "Marked deficits in verbal and nonverbal social communication skills",
+        "Social impairments apparent even with support in place",
+        "Inflexibility of behavior, difficulty coping with change",
+        "Repetitive behaviors appear frequently and disrupt general routines"
+      ],
+      approach: "Structured teaching (TEACCH framework), speech-language therapy with visual supports, occupational therapy for sensory integration, and consistent daily schedules.",
+      color: "border-amber-500",
+      accent: "text-amber-500",
+      badge: "bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-400"
+    },
+    {
+      num: 3,
+      title: "Autism Level 3: Requiring Very Substantial Support",
+      symptoms: [
+        "Severe deficits in verbal and nonverbal social communication skills",
+        "Very limited initiation of social interactions, minimal response",
+        "Great distress when changing focus or altering rigid routines",
+        "Repetitive/restrictive behaviors interfere greatly with daily actions"
+      ],
+      approach: "Highly intensive 1-on-1 therapist attention, augmentative & alternative communication (AAC) devices, sensory regulation space integration, and basic daily living skill (ADL) development.",
+      color: "border-rose-500",
+      accent: "text-rose-500",
+      badge: "bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-400"
+    }
+  ];
+
+  const cur = levels.find(l => l.num === activeLevel)!;
+
+  return (
+    <div className="bg-card border border-border rounded-3xl p-6 sm:p-8 md:p-12 shadow-2xl relative">
+      <div className="flex flex-col gap-8">
+        
+        <div className="grid grid-cols-3 gap-2 sm:gap-4">
+          {levels.map((l) => (
+            <button
+              key={l.num}
+              onClick={() => setActiveLevel(l.num)}
+              className={`py-3 sm:py-4 px-2 sm:px-6 rounded-xl font-serif text-sm sm:text-lg font-bold border transition-all ${activeLevel === l.num ? `bg-primary text-primary-foreground ${l.color}` : 'bg-background hover:bg-muted border-border'}`}
+            >
+              Level {l.num}
+            </button>
+          ))}
+        </div>
+
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeLevel}
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ duration: 0.4 }}
+            className={`border-l-4 ${cur.color} pl-4 sm:pl-8 py-2 space-y-6`}
+          >
+            <div>
+              <span className={`text-xs font-bold px-3 py-1 rounded-full ${cur.badge}`}>{cur.title}</span>
+              <h3 className="font-serif text-xl sm:text-2xl font-extrabold mt-3 text-foreground">Common Indicators & Traits</h3>
+            </div>
+
+            <ul className="space-y-3">
+              {cur.symptoms.map((s, idx) => (
+                <li key={idx} className="flex items-start gap-2.5 text-sm sm:text-base text-muted-foreground">
+                  <CheckCircle2 className={`h-5 w-5 ${cur.accent} mt-0.5 flex-shrink-0`} /> {s}
+                </li>
+              ))}
+            </ul>
+
+            <div className="border-t border-border pt-6 mt-6">
+              <h4 className="font-serif text-lg font-bold text-foreground flex items-center gap-2">
+                <Brain className={`h-5 w-5 ${cur.accent}`} /> Recommended Therapeutic Approach
+              </h4>
+              <p className="text-sm sm:text-base text-muted-foreground mt-2 leading-relaxed">{cur.approach}</p>
+            </div>
+          </motion.div>
+        </AnimatePresence>
+
+      </div>
+    </div>
+  );
+}
+
+const fadeUp = { initial: { opacity: 0, y: 30 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { duration: 0.7 } };
+
+export default function SpecialNeeds() {
+  const [activeSound, setActiveSound] = useState<string | null>(null);
+
+  const toggleSound = (soundType: 'ocean' | 'wind' | 'harp' | 'birds') => {
+    const current = synth.getCurrentSound();
+    if (current === soundType) {
+      synth.stopAll();
+      setActiveSound(null);
+    } else {
+      if (soundType === 'ocean') synth.playOcean();
+      else if (soundType === 'wind') synth.playWind();
+      else if (soundType === 'harp') synth.playHarp();
+      else if (soundType === 'birds') synth.playBirds();
+      setActiveSound(soundType);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      synth.stopAll();
+    };
   }, []);
 
   return (
-    <section className="py-12 sm:py-16 md:py-24 bg-secondary/30 relative overflow-hidden">
-      <div className="container">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 md:gap-16 items-center">
-          {/* Content Side */}
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-          >
-            <span className="text-primary font-medium tracking-widest uppercase text-xs sm:text-sm">{t("special.tag")}</span>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-serif font-bold mt-2 mb-4 sm:mb-6">
-              {t("special.title")}
+    <div className="w-full bg-background text-foreground selection:bg-primary/20 selection:text-primary py-12 sm:py-16 md:py-24 relative overflow-hidden">
+      
+      {/* ambient lights */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {[...Array(6)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute rounded-full opacity-10 dark:opacity-5 blur-3xl"
+            style={{
+              width: 300 + i * 100,
+              height: 300 + i * 100,
+              left: `${10 + i * 15}%`,
+              top: `${10 + (i % 2) * 40}%`,
+              background: `radial-gradient(circle, hsl(${200 + i * 30}, 80%, 75%) 0%, transparent 70%)`
+            }}
+          />
+        ))}
+      </div>
+
+      <div className="container relative z-10">
+        
+        {/* === HEADER INTRO === */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-20 sm:mb-28">
+          <motion.div {...fadeUp} className="space-y-6">
+            <span className="inline-flex items-center gap-2 text-primary font-bold tracking-[0.35em] uppercase text-xs sm:text-sm">
+              <Star className="h-4 w-4 text-primary animate-spin" /> Inclusive Sensory Learning
+            </span>
+            <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold leading-[1.05] tracking-tight">
+              Every Child Has a <br />
+              <span className="italic text-primary drop-shadow-sm">Beautiful Mind</span>
             </h2>
-
-            <p className="text-sm sm:text-base md:text-lg text-muted-foreground mb-6 sm:mb-8 leading-relaxed text-justify">
-              {t("special.desc")}
+            <p className="text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed text-justify">
+              Welcome to AIM Centre's specialized sensory harbor. Through interactive sound therapy, colorful particle stimulation, and customized Autism Level 1, 2, and 3 programs, we help neurodiverse children express their beautiful potentials. We provide structured learning experiences, continuous clinical guidance, and comprehensive family support networks.
             </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
-              <motion.div
-                whileTap={{ scale: 0.98 }}
-                className="bg-background p-4 sm:p-6 border border-border hover:border-primary transition-all duration-300 group hover-lift hover-glow cursor-pointer active:border-primary touch-manipulation"
-              >
-                <Brain className="h-6 w-6 sm:h-8 sm:w-8 text-primary mb-3 sm:mb-4 group-hover:scale-110 transition-transform" />
-                <h3 className="font-serif text-lg sm:text-xl font-bold mb-2">{t("special.sensory")}</h3>
-                <p className="text-xs sm:text-sm text-muted-foreground">Tailored environments that respect sensory sensitivities while promoting engagement through tactile, visual, and auditory stimuli.</p>
-              </motion.div>
-
-              <motion.div
-                whileTap={{ scale: 0.98 }}
-                className="bg-background p-4 sm:p-6 border border-border hover:border-primary transition-all duration-300 group hover-lift hover-glow cursor-pointer active:border-primary touch-manipulation"
-              >
-                <Heart className="h-6 w-6 sm:h-8 sm:w-8 text-primary mb-3 sm:mb-4 group-hover:scale-110 transition-transform" />
-                <h3 className="font-serif text-lg sm:text-xl font-bold mb-2">{t("special.emotional")}</h3>
-                <p className="text-xs sm:text-sm text-muted-foreground">Building confidence and emotional resilience through positive reinforcement, social stories, and guided interaction.</p>
-              </motion.div>
-
-              <motion.div
-                whileTap={{ scale: 0.98 }}
-                className="bg-background p-4 sm:p-6 border border-border hover:border-primary transition-all duration-300 group hover-lift hover-glow cursor-pointer active:border-primary touch-manipulation"
-              >
-                <Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-primary mb-3 sm:mb-4 group-hover:scale-110 transition-transform" />
-                <h3 className="font-serif text-lg sm:text-xl font-bold mb-2">{t("special.individualized")}</h3>
-                <p className="text-xs sm:text-sm text-muted-foreground">Customized Individualized Education Programs (IEPs) that evolve with your child's growth and milestones.</p>
-              </motion.div>
-
-              <motion.div
-                whileTap={{ scale: 0.98 }}
-                className="bg-background p-4 sm:p-6 border border-border hover:border-primary transition-all duration-300 group hover-lift hover-glow cursor-pointer active:border-primary touch-manipulation"
-              >
-                <Brain className="h-6 w-6 sm:h-8 sm:w-8 text-primary mb-3 sm:mb-4 group-hover:scale-110 transition-transform" />
-                <h3 className="font-serif text-lg sm:text-xl font-bold mb-2">{t("special.lifeSkills")}</h3>
-                <p className="text-xs sm:text-sm text-muted-foreground">Practical training in daily living skills, communication, and social interaction to foster independence.</p>
-              </motion.div>
+            <div className="flex flex-wrap gap-4">
+              <Button size="lg" className="rounded-none px-8 py-6 text-xs sm:text-sm uppercase tracking-widest font-bold">
+                Start Sensory Play <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="lg" className="rounded-none border-foreground px-8 py-6 text-xs sm:text-sm uppercase tracking-widest font-bold">
+                Consult Our Team
+              </Button>
             </div>
-
-            <Button size="lg" className="rounded-none px-6 sm:px-8 py-5 sm:py-6 text-sm touch-manipulation active:scale-95">
-              Learn About Our Approach
-            </Button>
           </motion.div>
 
-          {/* Visual Side */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="relative order-first lg:order-last"
-          >
-            <div className="relative aspect-square sm:aspect-[4/3] overflow-hidden">
+          <motion.div {...fadeUp} transition={{ delay: 0.2 }} className="relative">
+            <div className="relative aspect-[4/3] rounded-[2.5rem] overflow-hidden shadow-2xl border-4 border-card">
               <img
-                src="https://images.unsplash.com/photo-1555819206-7b30da4f1506?q=80&w=2071&auto=format&fit=crop"
-                alt="Child learning with sensory toys"
-                loading="lazy"
-                decoding="async"
+                src="https://images.unsplash.com/photo-1596464716127-f2a82984de30?q=80&w=1200"
+                alt="Child engaging in sensory learning"
                 className="w-full h-full object-cover"
+                loading="lazy"
               />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/25 to-transparent pointer-events-none" />
+            </div>
+            <motion.div
+              animate={{ y: [0, -10, 0] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute -bottom-6 -left-6 bg-card p-4 sm:p-5 rounded-2xl shadow-2xl border border-border"
+            >
+              <div className="flex items-center gap-3">
+                <div className="h-11 w-11 bg-emerald-100 dark:bg-emerald-950/30 rounded-full flex items-center justify-center">
+                  <Heart className="h-5 w-5 text-emerald-600 dark:text-emerald-400 animate-pulse" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-sm">Guided Sensory Care</h4>
+                  <p className="text-[10px] text-muted-foreground">IEP & ABA Certified</p>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        </div>
 
-              {/* Floating Cards */}
-              <motion.div
-                animate={{ y: [0, -10, 0] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute -bottom-4 sm:-bottom-8 -left-4 sm:-left-8 bg-background p-4 sm:p-6 shadow-xl border border-border max-w-[200px] sm:max-w-xs hidden sm:block"
-              >
-                <div className="flex items-center gap-3 sm:gap-4 mb-2">
-                  <div className="h-8 w-8 sm:h-10 sm:w-10 bg-primary/10 flex items-center justify-center rounded-full">
-                    <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-sm sm:text-base">Autism Support</h4>
-                    <p className="text-[10px] sm:text-xs text-muted-foreground">Level 1, 2, 3 & Undefined</p>
-                  </div>
+        {/* === SENSORY ZONE === */}
+        <div className="mb-20 sm:mb-28">
+          <motion.div {...fadeUp} className="text-center mb-12 sm:mb-16 space-y-4">
+            <span className="text-primary font-bold tracking-[0.3em] uppercase text-xs">Sensory Zone</span>
+            <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold mt-2">Sensory Therapy Playground</h2>
+            <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">
+              Explore beautifully crafted, high-end sensory interactive exercises built to help autistic children with calming down, regulation, and spatial focus.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <motion.div {...fadeUp} className="bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-2xl h-full flex flex-col justify-between">
+              <div>
+                <h3 className="font-serif text-xl sm:text-2xl font-bold mb-3 flex items-center gap-2 text-foreground">
+                  <Ear className="h-5 w-5 text-primary animate-pulse" /> Auditory Soundscape Synth
+                </h3>
+                <p className="text-xs sm:text-sm text-muted-foreground mb-6">
+                  A beautiful, premium ambient sound machine. Triggering a new soundscape stops the previous immediately for seamless auditory therapy.
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 my-6">
+                {[
+                  { type: 'ocean', label: 'Ocean Waves', icon: Waves },
+                  { type: 'wind', label: 'Forest Wind', icon: TreePine },
+                  { type: 'harp', label: 'Zen Harp', icon: Music },
+                  { type: 'birds', label: 'Chirping Birds', icon: Bird }
+                ].map((s, idx) => (
+                  <motion.button
+                    key={idx}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => toggleSound(s.type as any)}
+                    className={`flex flex-col items-center justify-center gap-2.5 p-4 rounded-2xl border-2 transition-all duration-300 touch-manipulation min-h-[100px] ${activeSound === s.type ? 'border-primary bg-primary/10 shadow-lg shadow-primary/10' : 'border-border bg-background hover:border-primary/50'}`}
+                  >
+                    <s.icon className={`h-7 w-7 ${activeSound === s.type ? 'text-primary animate-bounce' : 'text-muted-foreground'}`} />
+                    <span className="text-xs font-bold">{s.label}</span>
+                    {activeSound === s.type && <span className="text-[10px] text-primary uppercase font-extrabold tracking-wider">Active</span>}
+                  </motion.button>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground text-center">Pure organic synthesizer waveforms</p>
+            </motion.div>
+
+            <motion.div {...fadeUp} transition={{ delay: 0.15 }}>
+              <InteractiveShatterZone />
+            </motion.div>
+
+            <motion.div {...fadeUp} transition={{ delay: 0.3 }}>
+              <BreathingZone />
+            </motion.div>
+          </div>
+        </div>
+
+        {/* === GAMES ZONE === */}
+        <div className="mb-20 sm:mb-28">
+          <motion.div {...fadeUp} className="text-center mb-12 sm:mb-16 space-y-4">
+            <span className="text-primary font-bold tracking-[0.3em] uppercase text-xs font-sans">Educational Play</span>
+            <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold mt-2">Sensory-Friendly Interactive Games</h2>
+            <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">
+              Colorful, warm, and zero-stress games designed with instant positive feedback to support fine motor skills and pattern recognition.
+            </p>
+          </motion.div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <motion.div {...fadeUp}>
+              <BalloonPopGame />
+            </motion.div>
+            <motion.div {...fadeUp} transition={{ delay: 0.2 }}>
+              <MemorySoundGame />
+            </motion.div>
+          </div>
+        </div>
+
+        {/* === AUTISM LEVELS === */}
+        <div className="mb-20 sm:mb-28">
+          <motion.div {...fadeUp} className="text-center mb-12 sm:mb-16 space-y-4">
+            <span className="text-primary font-bold tracking-[0.3em] uppercase text-xs">Spectrum Insights</span>
+            <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold mt-2">Autism Spectrum Levels</h2>
+            <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">
+              Autism is a broad, colorful spectrum. We target specialized strategies mapped carefully to Levels 1, 2, and 3.
+            </p>
+          </motion.div>
+          <AutismLevelsTabs />
+        </div>
+
+        {/* === SPECIAL COURSES CAROUSEL === */}
+        <div className="mb-20 sm:mb-28">
+          <motion.div {...fadeUp} className="text-center mb-12 sm:mb-16 space-y-4">
+            <span className="text-primary font-bold tracking-[0.3em] uppercase text-xs">Curated Academy</span>
+            <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold mt-2">Special Needs Courses</h2>
+            <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">
+              Explore specialized, certified courses mapped to Autism levels, including positive parenting, sensory education, and speech development.
+            </p>
+          </motion.div>
+          <CourseCarousel />
+        </div>
+
+        {/* === HAPPY GALLERY === */}
+        <div className="mb-20 sm:mb-28">
+          <motion.div {...fadeUp} className="text-center mb-12 sm:mb-16 space-y-4">
+            <span className="text-primary font-bold tracking-[0.3em] uppercase text-xs">Our Gallery</span>
+            <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold mt-2">Happily Learning With Us</h2>
+            <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">
+              Take a peek inside AIM Centre's classrooms, playgrounds, and visual therapy rooms in Bangladesh and abroad.
+            </p>
+          </motion.div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              { title: "Art Class in Dhaka", img: "https://images.unsplash.com/photo-1460518451285-cd7bd7454c76?q=80&w=600" },
+              { title: "Sensory Playground Sydney", img: "https://images.unsplash.com/photo-1545624446-43a77d29293e?q=80&w=600" },
+              { title: "Parent Workshop Paris", img: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=600" },
+              { title: "Speech Therapy Class", img: "https://images.unsplash.com/photo-1577896851231-70ef18881754?q=80&w=600" }
+            ].map((g, idx) => (
+              <motion.div key={idx} {...fadeUp} transition={{ delay: idx * 0.1 }}
+                className="bg-card border border-border rounded-2xl overflow-hidden shadow-lg group cursor-pointer hover-lift">
+                <div className="aspect-[4/3] overflow-hidden">
+                  <img src={g.img} alt={g.title} className="w-full h-full object-cover transition-transform duration-750 group-hover:scale-105" />
+                </div>
+                <div className="p-4 border-t border-border bg-card">
+                  <h4 className="font-serif font-bold text-sm text-foreground">{g.title}</h4>
                 </div>
               </motion.div>
-            </div>
-
-            {/* Decorative Elements */}
-            <div className="absolute -top-2 -right-2 sm:-top-4 sm:-right-4 w-16 h-16 sm:w-24 sm:h-24 border-t-2 border-r-2 border-primary/30"></div>
-            <div className="absolute -bottom-2 -left-2 sm:-bottom-4 sm:-left-4 w-16 h-16 sm:w-24 sm:h-24 border-b-2 border-l-2 border-primary/30"></div>
-          </motion.div>
-        </div>
-      </div>
-
-      {/* Parents Resources Section */}
-      <div className="container mt-16 sm:mt-24 md:mt-32">
-        <div className="text-center mb-8 sm:mb-12 md:mb-16">
-          <span className="text-primary font-medium tracking-widest uppercase text-xs sm:text-sm">Support & Community</span>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-serif font-bold mt-2 mb-4 sm:mb-6">{t("special.resources")}</h2>
-          <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
-            {t("special.resourcesDesc")}
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 md:gap-16 items-start">
-          {/* Video Section */}
-          <div className="relative group">
-            <div className="aspect-video bg-black relative overflow-hidden border border-border shadow-2xl z-10">
-              {/* Video placeholder */}
-              {!videoLoaded && (
-                <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 animate-pulse" />
-              )}
-              <video
-                key="github-classroom-v1"
-                width="100%"
-                height="100%"
-                controls
-                autoPlay
-                muted
-                loop
-                playsInline
-                preload="metadata"
-                poster="https://images.pexels.com/photos/5212345/pexels-photo-5212345.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
-                className={`w-full h-full object-cover transition-opacity duration-300 ${videoLoaded ? 'opacity-100' : 'opacity-0'}`}
-                onLoadedData={() => setVideoLoaded(true)}
-              >
-                <source src="https://raw.githubusercontent.com/intel-iot-devkit/sample-videos/master/classroom.mp4" type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
-            </div>
-            <div className="mt-4 sm:mt-6">
-              <h3 className="font-serif text-xl sm:text-2xl font-bold mb-2">{t("special.classroom")}</h3>
-              <p className="text-sm sm:text-base text-muted-foreground">{t("special.classroomDesc")}</p>
-            </div>
-          </div>
-
-          {/* Resources List */}
-          <div className="space-y-6 sm:space-y-8">
-            <div className="border-l-2 border-primary pl-4 sm:pl-6 py-2">
-              <h3 className="font-serif text-xl sm:text-2xl font-bold mb-2">Recommended Reading</h3>
-              <ul className="space-y-3 sm:space-y-4 text-sm sm:text-base text-muted-foreground">
-                <li className="hover:text-primary active:text-primary transition-colors cursor-pointer touch-manipulation py-1">
-                  <span className="font-bold block text-foreground">The Reason I Jump</span>
-                  by Naoki Higashida - An inner voice of a thirteen-year-old boy with autism.
-                </li>
-                <li className="hover:text-primary active:text-primary transition-colors cursor-pointer touch-manipulation py-1">
-                  <span className="font-bold block text-foreground">Neurotribes</span>
-                  by Steve Silberman - The legacy of autism and the future of neurodiversity.
-                </li>
-              </ul>
-            </div>
-
-            <div className="border-l-2 border-primary pl-4 sm:pl-6 py-2">
-              <h3 className="font-serif text-xl sm:text-2xl font-bold mb-2">Helpful Blogs & Guides</h3>
-              <ul className="space-y-3 sm:space-y-4 text-sm sm:text-base text-muted-foreground">
-                <li className="hover:text-primary active:text-primary transition-colors cursor-pointer touch-manipulation py-1">
-                  <span className="font-bold block text-foreground">Autism Speaks Tool Kits</span>
-                  Comprehensive guides for every stage of the journey, from diagnosis to adulthood.
-                </li>
-                <li className="hover:text-primary active:text-primary transition-colors cursor-pointer touch-manipulation py-1">
-                  <span className="font-bold block text-foreground">Sensory Processing Guide</span>
-                  Understanding and managing sensory sensitivities in daily life.
-                </li>
-              </ul>
-            </div>
-
-            <Button variant="outline" className="rounded-none border-primary text-primary hover:bg-primary hover:text-primary-foreground px-6 sm:px-8 py-5 sm:py-6 w-full sm:w-auto text-sm touch-manipulation active:scale-95">
-              View All Resources
-            </Button>
+            ))}
           </div>
         </div>
+
+        {/* === TESTIMONIALS === */}
+        <motion.div {...fadeUp} className="mb-8">
+          <PremiumParentTestimonials />
+        </motion.div>
+
       </div>
-    </section>
+    </div>
   );
 }
