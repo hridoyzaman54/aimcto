@@ -8,6 +8,27 @@
       content="width=device-width, initial-scale=1.0, maximum-scale=5, user-scalable=yes" />
     <title>AIM Centre 360</title>
     
+    <script>
+      // Self-Healing Script: Instantly clean up and unregister any active service worker on localhost/127.0.0.1.
+      // This prevents the browser from aggressively serving cached assets from older builds and ensures that 
+      // every edit made in development is visible instantly on save, exactly like standard web applications.
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(function(registrations) {
+            for (let registration of registrations) {
+              registration.unregister().then(function(success) {
+                if (success) {
+                  console.log('[Self-Healing] Stale Development Service Worker successfully unregistered to bypass cache!');
+                  window.location.reload();
+                }
+              });
+            }
+          });
+        }
+      }
+    </script>
+
+    
     <!-- Critical Resource Preloading for Instant Load -->
     <!-- Preload Hero Images - High Priority -->
     <link rel="preload" href="/images/hero/panel-1-texture.webp" as="image" type="image/webp" fetchpriority="high" />
