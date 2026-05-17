@@ -792,7 +792,7 @@ function MemorySoundGame() {
   const won = cards.length > 0 && cards.every(c => c.matched);
 
   return (
-    <div className="flex flex-col bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden h-[450px] justify-between">
+    <div className="flex flex-col bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden h-[500px] justify-between">
       <div className="flex justify-between items-center z-10">
         <div>
           <h3 className="font-serif text-xl sm:text-2xl font-bold flex items-center gap-2 text-foreground">
