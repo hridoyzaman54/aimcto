@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { ArrowRight, BookOpen, Heart, Search, ChevronLeft, ChevronRight, FolderTree, Loader2 } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
+import useEmblaCarousel from "embla-carousel-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
@@ -178,12 +179,9 @@ export default function Courses() {
   const { user } = useAuth();
   const [activeCategory, setActiveCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
-  const [carouselIndex, setCarouselIndex] = useState(0);
-  const carouselRef = useRef<HTMLDivElement>(null);
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [isCarouselHovered, setIsCarouselHovered] = useState(false);
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'start' });
 
   // Fetch categories from database
   const { data: dbCategories, isLoading: categoriesLoading } = trpc.category.getAll.useQuery();
@@ -225,62 +223,42 @@ export default function Courses() {
     return matchesCategory && matchesSearch;
   });
 
-  const handleNext = () => {
-    const maxIndex = Math.max(0, filteredCourses.length - (isMobile ? 1 : 3));
-    setCarouselIndex(prev => (prev >= maxIndex ? 0 : prev + 1));
-  };
+  const handleNext = useCallback(() => {
+    if (emblaApi) emblaApi.scrollNext();
+  }, [emblaApi]);
 
-  const handlePrev = () => {
-    const maxIndex = Math.max(0, filteredCourses.length - (isMobile ? 1 : 3));
-    setCarouselIndex(prev => (prev <= 0 ? maxIndex : prev - 1));
-  };
+  const handlePrev = useCallback(() => {
+    if (emblaApi) emblaApi.scrollPrev();
+  }, [emblaApi]);
 
   // Premium Auto-play carousel
   useEffect(() => {
+    if (!emblaApi) return;
     if (filteredCourses.length <= (isMobile ? 1 : 3)) return;
     
-    // Pause on hover or touch
-    if (isCarouselHovered || touchStart !== null) return;
+    let intervalId: ReturnType<typeof setInterval>;
     
-    const interval = setInterval(() => {
-      setCarouselIndex(prev => {
-        const maxIndex = Math.max(0, filteredCourses.length - (isMobile ? 1 : 3));
-        return prev >= maxIndex ? 0 : prev + 1;
-      });
-    }, 3000); // Premium pacing
+    const startAutoplay = () => {
+      clearInterval(intervalId);
+      intervalId = setInterval(() => {
+        if (!isCarouselHovered) {
+          emblaApi.scrollNext();
+        }
+      }, 3000);
+    };
+
+    startAutoplay();
     
-    return () => clearInterval(interval);
-  }, [filteredCourses.length, isCarouselHovered, touchStart, isMobile, carouselIndex]);
-
-  // Touch handlers for swipe
-  const minSwipeDistance = 50;
-
-  const onTouchStart = (e: React.TouchEvent) => {
-    setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
-  };
-
-  const onTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
-
-  const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) {
-      setTouchStart(null);
-      setTouchEnd(null);
-      return;
-    }
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
-    if (isLeftSwipe) {
-      handleNext();
-    } else if (isRightSwipe) {
-      handlePrev();
-    }
-    setTouchStart(null);
-    setTouchEnd(null);
-  };
+    const handlePointerDown = () => clearInterval(intervalId);
+    emblaApi.on('pointerDown', handlePointerDown);
+    emblaApi.on('pointerUp', startAutoplay);
+    
+    return () => {
+      clearInterval(intervalId);
+      emblaApi.off('pointerDown', handlePointerDown);
+      emblaApi.off('pointerUp', startAutoplay);
+    };
+  }, [emblaApi, filteredCourses.length, isCarouselHovered, isMobile]);
 
   const isLoading = categoriesLoading || coursesLoading;
 
@@ -477,26 +455,22 @@ export default function Courses() {
                 </div>
 
                 <div 
-                  className="relative overflow-hidden touch-pan-y" 
-                  ref={carouselRef}
-                  onTouchStart={onTouchStart}
-                  onTouchMove={onTouchMove}
-                  onTouchEnd={onTouchEnd}
+                  className="overflow-hidden cursor-grab active:cursor-grabbing py-4" 
+                  ref={emblaRef}
                   onMouseEnter={() => setIsCarouselHovered(true)}
                   onMouseLeave={() => setIsCarouselHovered(false)}
                 >
-                  <motion.div
-                    className="flex gap-4 sm:gap-6 cursor-grab active:cursor-grabbing"
-                    animate={{ x: -carouselIndex * (isMobile ? 216 : 256) }}
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                  >
+                  <div className="flex -ml-4 sm:-ml-6 touch-pan-y">
                     {filteredCourses.map((course) => (
-                      <motion.div
+                      <div
                         key={`carousel-${course.id}`}
-                        className="w-[200px] sm:w-[220px] lg:w-[240px] flex-shrink-0 bg-card border border-border rounded-lg overflow-hidden hover:border-primary transition-all duration-500 hover:shadow-lg group"
-                        whileHover={{ y: -5 }}
-                        whileTap={{ scale: 0.98 }}
+                        className="flex-[0_0_200px] sm:flex-[0_0_220px] lg:flex-[0_0_240px] min-w-0 pl-4 sm:pl-6"
                       >
+                        <motion.div
+                          className="w-full bg-card border border-border rounded-lg overflow-hidden hover:border-primary transition-all duration-500 hover:shadow-lg group"
+                          whileHover={{ y: -5 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
                         {/* Image Container - square aspect */}
                         <div className="relative aspect-square overflow-hidden">
                           <img
@@ -538,9 +512,10 @@ export default function Courses() {
                             </Button>
                           </Link>
                         </div>
-                      </motion.div>
+                        </motion.div>
+                      </div>
                     ))}
-                  </motion.div>
+                  </div>
                 </div>
               </div>
             )}
