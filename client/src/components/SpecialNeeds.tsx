@@ -8,8 +8,7 @@ import { Link } from "wouter";
 const heroImages = [
   "https://images.unsplash.com/photo-1544027993-37dbfe43562a?q=80&w=1200",
   "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?q=80&w=1200",
-  "https://images.unsplash.com/photo-1596464716127-f2a82984de30?q=80&w=1200",
-  "https://images.unsplash.com/photo-1576669801775-ff43c5ab079d?q=80&w=1200"
+  "https://images.unsplash.com/photo-1596464716127-f2a82984de30?q=80&w=1200"
 ];
 
 function HeroImageSlideshow() {
