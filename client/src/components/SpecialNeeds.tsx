@@ -95,10 +95,11 @@ class NurseryRhymeSynthesizer {
         osc.type = 'triangle'; // Gentle tone
         osc.frequency.setValueAtTime(noteFreqs[note], this.ctx.currentTime);
         
-        // ADSR Envelope
+        // ADSR Envelope - Increased Volume
+        const maxVol = 0.5;
         gain.gain.setValueAtTime(0, this.ctx.currentTime);
-        gain.gain.linearRampToValueAtTime(0.1, this.ctx.currentTime + 0.05);
-        gain.gain.setValueAtTime(0.1, this.ctx.currentTime + (timeMs/1000) - 0.1);
+        gain.gain.linearRampToValueAtTime(maxVol, this.ctx.currentTime + 0.05);
+        gain.gain.setValueAtTime(maxVol, this.ctx.currentTime + (timeMs/1000) - 0.1);
         gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + (timeMs/1000) - 0.01);
 
         osc.connect(gain).connect(this.ctx.destination);
@@ -475,7 +476,7 @@ function InteractiveShatterZone() {
       </div>
 
       <div className="border border-border/80 rounded-2xl overflow-hidden bg-gradient-to-br from-background to-secondary/20 relative h-[350px] shadow-inner z-10">
-        <canvas ref={canvasRef} className="w-full h-full block cursor-crosshair touch-none" />
+        <canvas ref={canvasRef} className="w-full h-full block cursor-crosshair touch-pan-y" />
       </div>
 
       <div className="flex flex-wrap gap-2 mt-6 justify-center z-10 relative">
@@ -1181,6 +1182,7 @@ const fadeUp = { initial: { opacity: 0, y: 30 }, whileInView: { opacity: 1, y: 0
 
 export default function SpecialNeeds() {
   const [activeSound, setActiveSound] = useState<string | null>(null);
+  const sensoryRef = useRef<HTMLDivElement>(null);
 
   const toggleSound = (soundType: 'twinkle' | 'boat' | 'mary' | 'london') => {
     const current = synth.getCurrentSound();
@@ -1197,7 +1199,20 @@ export default function SpecialNeeds() {
   };
 
   useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries[0].isIntersecting) {
+          synth.stopAll();
+          setActiveSound(null);
+        }
+      },
+      { threshold: 0 } // Triggers immediately when fully out of view
+    );
+    
+    if (sensoryRef.current) observer.observe(sensoryRef.current);
+
     return () => {
+      observer.disconnect();
       synth.stopAll();
     };
   }, []);
@@ -1346,7 +1361,7 @@ export default function SpecialNeeds() {
         </div>
 
         {/* === SENSORY ZONE === */}
-        <div className="mb-20 sm:mb-28">
+        <div className="mb-20 sm:mb-28" ref={sensoryRef}>
           <motion.div {...fadeUp} className="text-center mb-12 sm:mb-16 space-y-4">
             <span className="text-primary font-bold tracking-[0.3em] uppercase text-xs">Sensory Zone</span>
             <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold mt-2">Sensory Therapy Playground</h2>
