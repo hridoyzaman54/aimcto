@@ -8,7 +8,6 @@ import Home from "./pages/Home";
 import { useEffect, lazy, Suspense } from "react";
 import Lenis from "@studio-freight/lenis";
 import CustomCursor from "./components/CustomCursor";
-import ScrollToTop from "./components/ScrollToTop";
 import { DashboardLayoutSkeleton } from "./components/DashboardLayoutSkeleton";
 
 import AIVoicePage from "@/pages/AIVoicePage";
@@ -187,7 +186,6 @@ function AppContent() {
       <TooltipProvider>
         {!isDashboardRoute && <CustomCursor />}
         {location !== '/auth' && !isDashboardRoute && <Chatbot />}
-        <ScrollToTop />
         <Toaster />
         <Router />
       </TooltipProvider>
