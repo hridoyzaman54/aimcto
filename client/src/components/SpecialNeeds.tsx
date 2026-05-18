@@ -43,10 +43,12 @@ function HeroImageSlideshow() {
 // ==========================================
 // 1. PREMIUM SYNTHESIZER & AUDIO GENERATOR
 // ==========================================
-class CalmingSynthesizer {
+class NurseryRhymeSynthesizer {
   private ctx: AudioContext | null = null;
-  private activeNodes: { osc?: AudioNode; gain?: GainNode; filter?: BiquadFilterNode; lfo?: OscillatorNode }[] = [];
   private currentSoundName: string | null = null;
+  private intervalId: NodeJS.Timeout | null = null;
+  private activeOsc: OscillatorNode | null = null;
+  private activeGain: GainNode | null = null;
 
   private initCtx() {
     if (!this.ctx) {
@@ -58,15 +60,10 @@ class CalmingSynthesizer {
   }
 
   stopAll() {
-    this.activeNodes.forEach(node => {
-      try {
-        if (node.lfo) node.lfo.stop();
-        if (node.osc && (node.osc as any).stop) (node.osc as any).stop();
-      } catch (e) {
-        // Already stopped
-      }
-    });
-    this.activeNodes = [];
+    if (this.intervalId) clearTimeout(this.intervalId);
+    if (this.activeOsc) {
+      try { this.activeOsc.stop(); } catch (e) {}
+    }
     this.currentSoundName = null;
   }
 
@@ -74,191 +71,115 @@ class CalmingSynthesizer {
     return this.currentSoundName;
   }
 
-  playOcean() {
+  private playSequence(name: string, melody: {note: string, duration: number}[], bpm: number) {
     this.initCtx();
     this.stopAll();
     if (!this.ctx) return;
+    this.currentSoundName = name;
 
-    this.currentSoundName = "ocean";
-
-    const bufferSize = this.ctx.sampleRate * 5;
-    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) {
-      data[i] = Math.random() * 2 - 1;
-    }
-
-    const noiseNode = this.ctx.createBufferSource();
-    noiseNode.buffer = buffer;
-    noiseNode.loop = true;
-
-    const filter = this.ctx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.Q.value = 1.0;
-
-    const lfo = this.ctx.createOscillator();
-    lfo.frequency.value = 0.08; 
-    
-    const lfoGain = this.ctx.createGain();
-    lfoGain.gain.value = 400;
-
-    const gain = this.ctx.createGain();
-    gain.gain.value = 0.001;
-
-    lfo.connect(lfoGain);
-    lfoGain.connect(filter.frequency);
-    noiseNode.connect(filter);
-    filter.connect(gain);
-    gain.connect(this.ctx.destination);
-
-    filter.frequency.value = 450;
-
-    lfo.start();
-    noiseNode.start();
-
-    gain.gain.exponentialRampToValueAtTime(0.2, this.ctx.currentTime + 2);
-
-    this.activeNodes.push({ osc: noiseNode, gain, filter, lfo });
-  }
-
-  playWind() {
-    this.initCtx();
-    this.stopAll();
-    if (!this.ctx) return;
-
-    this.currentSoundName = "wind";
-
-    const bufferSize = this.ctx.sampleRate * 4;
-    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
-    for (let i = 0; i < bufferSize; i++) {
-      const white = Math.random() * 2 - 1;
-      b0 = 0.99886 * b0 + white * 0.0555179;
-      b1 = 0.99332 * b1 + white * 0.0750759;
-      b2 = 0.96900 * b2 + white * 0.1538520;
-      b3 = 0.86650 * b3 + white * 0.3104856;
-      b4 = 0.55000 * b4 + white * 0.5329522;
-      b5 = -0.7616 * b5 - white * 0.0168980;
-      data[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
-      data[i] *= 0.11;
-      b6 = white * 0.115926;
-    }
-
-    const noiseNode = this.ctx.createBufferSource();
-    noiseNode.buffer = buffer;
-    noiseNode.loop = true;
-
-    const filter = this.ctx.createBiquadFilter();
-    filter.type = 'bandpass';
-    filter.Q.value = 2.0;
-
-    const lfo = this.ctx.createOscillator();
-    lfo.frequency.value = 0.15;
-
-    const lfoGain = this.ctx.createGain();
-    lfoGain.gain.value = 250;
-
-    const gain = this.ctx.createGain();
-    gain.gain.value = 0.001;
-
-    lfo.connect(lfoGain);
-    lfoGain.connect(filter.frequency);
-    noiseNode.connect(filter);
-    filter.connect(gain);
-    gain.connect(this.ctx.destination);
-
-    filter.frequency.value = 350;
-
-    lfo.start();
-    noiseNode.start();
-
-    gain.gain.exponentialRampToValueAtTime(0.25, this.ctx.currentTime + 1.5);
-
-    this.activeNodes.push({ osc: noiseNode, gain, filter, lfo });
-  }
-
-  playHarp() {
-    this.initCtx();
-    this.stopAll();
-    if (!this.ctx) return;
-
-    this.currentSoundName = "harp";
-
-    const pentatonicScale = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33, 659.25];
-    let currentNoteIndex = 0;
-
-    const scheduleNextNote = () => {
-      if (this.currentSoundName !== "harp" || !this.ctx) return;
-
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      const filter = this.ctx.createBiquadFilter();
-
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(pentatonicScale[currentNoteIndex], this.ctx.currentTime);
-      
-      filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(1000, this.ctx.currentTime);
-      filter.frequency.exponentialRampToValueAtTime(200, this.ctx.currentTime + 0.8);
-
-      gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 1.2);
-
-      osc.connect(filter).connect(gain).connect(this.ctx.destination);
-      osc.start();
-      osc.stop(this.ctx.currentTime + 1.3);
-
-      this.activeNodes.push({ osc, gain, filter });
-
-      const step = Math.random() > 0.5 ? 1 : -1;
-      currentNoteIndex = (currentNoteIndex + step + pentatonicScale.length) % pentatonicScale.length;
-
-      const nextDelay = 1200 + Math.random() * 600;
-      setTimeout(scheduleNextNote, nextDelay);
+    const noteFreqs: {[key: string]: number} = {
+      'C4': 261.63, 'D4': 293.66, 'E4': 329.63, 'F4': 349.23, 'G4': 392.00, 'A4': 440.00, 'B4': 493.88, 'C5': 523.25
     };
 
-    scheduleNextNote();
-  }
+    let index = 0;
+    const beatLength = 60000 / bpm;
 
-  playBirds() {
-    this.initCtx();
-    this.stopAll();
-    if (!this.ctx) return;
-
-    this.currentSoundName = "birds";
-
-    const scheduleBirdChirp = () => {
-      if (this.currentSoundName !== "birds" || !this.ctx) return;
-
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-
-      osc.type = 'sine';
+    const playNextNote = () => {
+      if (this.currentSoundName !== name || !this.ctx) return;
       
-      const now = this.ctx.currentTime;
-      const baseFreq = 2200 + Math.random() * 600;
-      osc.frequency.setValueAtTime(baseFreq, now);
-      osc.frequency.exponentialRampToValueAtTime(baseFreq - 800, now + 0.15);
+      const { note, duration } = melody[index];
+      const timeMs = duration * beatLength;
+      
+      if (note !== 'R') {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle'; // Gentle tone
+        osc.frequency.setValueAtTime(noteFreqs[note], this.ctx.currentTime);
+        
+        // ADSR Envelope
+        gain.gain.setValueAtTime(0, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.1, this.ctx.currentTime + 0.05);
+        gain.gain.setValueAtTime(0.1, this.ctx.currentTime + (timeMs/1000) - 0.1);
+        gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + (timeMs/1000) - 0.01);
 
-      gain.gain.setValueAtTime(0.06, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
-
-      osc.connect(gain).connect(this.ctx.destination);
-      osc.start();
-      osc.stop(now + 0.2);
-
-      this.activeNodes.push({ osc, gain });
-
-      const nextChirp = 300 + Math.random() * 2500;
-      setTimeout(scheduleBirdChirp, nextChirp);
+        osc.connect(gain).connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + (timeMs/1000));
+        
+        this.activeOsc = osc;
+        this.activeGain = gain;
+      }
+      
+      index = (index + 1) % melody.length;
+      this.intervalId = setTimeout(playNextNote, timeMs);
     };
 
-    scheduleBirdChirp();
+    playNextNote();
+  }
+
+  playTwinkle() {
+    const m = [
+      {note: 'C4', duration: 1}, {note: 'C4', duration: 1}, {note: 'G4', duration: 1}, {note: 'G4', duration: 1},
+      {note: 'A4', duration: 1}, {note: 'A4', duration: 1}, {note: 'G4', duration: 2},
+      {note: 'F4', duration: 1}, {note: 'F4', duration: 1}, {note: 'E4', duration: 1}, {note: 'E4', duration: 1},
+      {note: 'D4', duration: 1}, {note: 'D4', duration: 1}, {note: 'C4', duration: 2},
+      {note: 'G4', duration: 1}, {note: 'G4', duration: 1}, {note: 'F4', duration: 1}, {note: 'F4', duration: 1},
+      {note: 'E4', duration: 1}, {note: 'E4', duration: 1}, {note: 'D4', duration: 2},
+      {note: 'G4', duration: 1}, {note: 'G4', duration: 1}, {note: 'F4', duration: 1}, {note: 'F4', duration: 1},
+      {note: 'E4', duration: 1}, {note: 'E4', duration: 1}, {note: 'D4', duration: 2},
+      {note: 'C4', duration: 1}, {note: 'C4', duration: 1}, {note: 'G4', duration: 1}, {note: 'G4', duration: 1},
+      {note: 'A4', duration: 1}, {note: 'A4', duration: 1}, {note: 'G4', duration: 2},
+      {note: 'F4', duration: 1}, {note: 'F4', duration: 1}, {note: 'E4', duration: 1}, {note: 'E4', duration: 1},
+      {note: 'D4', duration: 1}, {note: 'D4', duration: 1}, {note: 'C4', duration: 2},
+      {note: 'R', duration: 2}
+    ];
+    this.playSequence('twinkle', m, 120);
+  }
+
+  playRowBoat() {
+    const m = [
+      {note: 'C4', duration: 1.5}, {note: 'C4', duration: 1.5}, {note: 'C4', duration: 1}, {note: 'D4', duration: 0.5}, {note: 'E4', duration: 1.5},
+      {note: 'E4', duration: 1}, {note: 'D4', duration: 0.5}, {note: 'E4', duration: 1}, {note: 'F4', duration: 0.5}, {note: 'G4', duration: 3},
+      {note: 'C5', duration: 0.33}, {note: 'C5', duration: 0.33}, {note: 'C5', duration: 0.34}, {note: 'G4', duration: 0.33}, {note: 'G4', duration: 0.33}, {note: 'G4', duration: 0.34}, 
+      {note: 'E4', duration: 0.33}, {note: 'E4', duration: 0.33}, {note: 'E4', duration: 0.34}, {note: 'C4', duration: 0.33}, {note: 'C4', duration: 0.33}, {note: 'C4', duration: 0.34},
+      {note: 'G4', duration: 1}, {note: 'F4', duration: 0.5}, {note: 'E4', duration: 1}, {note: 'D4', duration: 0.5}, {note: 'C4', duration: 3},
+      {note: 'R', duration: 2}
+    ];
+    this.playSequence('boat', m, 100);
+  }
+
+  playMary() {
+    const m = [
+      {note: 'E4', duration: 1.5}, {note: 'D4', duration: 0.5}, {note: 'C4', duration: 1}, {note: 'D4', duration: 1},
+      {note: 'E4', duration: 1}, {note: 'E4', duration: 1}, {note: 'E4', duration: 2},
+      {note: 'D4', duration: 1}, {note: 'D4', duration: 1}, {note: 'D4', duration: 2},
+      {note: 'E4', duration: 1}, {note: 'G4', duration: 1}, {note: 'G4', duration: 2},
+      {note: 'E4', duration: 1.5}, {note: 'D4', duration: 0.5}, {note: 'C4', duration: 1}, {note: 'D4', duration: 1},
+      {note: 'E4', duration: 1}, {note: 'E4', duration: 1}, {note: 'E4', duration: 1}, {note: 'E4', duration: 1},
+      {note: 'D4', duration: 1}, {note: 'D4', duration: 1}, {note: 'E4', duration: 1}, {note: 'D4', duration: 1},
+      {note: 'C4', duration: 4},
+      {note: 'R', duration: 2}
+    ];
+    this.playSequence('mary', m, 140);
+  }
+
+  playLondon() {
+    const m = [
+      {note: 'G4', duration: 1.5}, {note: 'A4', duration: 0.5}, {note: 'G4', duration: 1}, {note: 'F4', duration: 1},
+      {note: 'E4', duration: 1}, {note: 'F4', duration: 1}, {note: 'G4', duration: 2},
+      {note: 'D4', duration: 1}, {note: 'E4', duration: 1}, {note: 'F4', duration: 2},
+      {note: 'E4', duration: 1}, {note: 'F4', duration: 1}, {note: 'G4', duration: 2},
+      {note: 'G4', duration: 1.5}, {note: 'A4', duration: 0.5}, {note: 'G4', duration: 1}, {note: 'F4', duration: 1},
+      {note: 'E4', duration: 1}, {note: 'F4', duration: 1}, {note: 'G4', duration: 2},
+      {note: 'D4', duration: 2}, {note: 'G4', duration: 2},
+      {note: 'E4', duration: 1}, {note: 'C4', duration: 3},
+      {note: 'R', duration: 2}
+    ];
+    this.playSequence('london', m, 130);
   }
 }
 
-const synth = new CalmingSynthesizer();
+const synth = new NurseryRhymeSynthesizer();
 
 // ==========================================
 // 2. BREATHING GLOWING LOTUS COMPONENT
@@ -1262,16 +1183,16 @@ const fadeUp = { initial: { opacity: 0, y: 30 }, whileInView: { opacity: 1, y: 0
 export default function SpecialNeeds() {
   const [activeSound, setActiveSound] = useState<string | null>(null);
 
-  const toggleSound = (soundType: 'ocean' | 'wind' | 'harp' | 'birds') => {
+  const toggleSound = (soundType: 'twinkle' | 'boat' | 'mary' | 'london') => {
     const current = synth.getCurrentSound();
     if (current === soundType) {
       synth.stopAll();
       setActiveSound(null);
     } else {
-      if (soundType === 'ocean') synth.playOcean();
-      else if (soundType === 'wind') synth.playWind();
-      else if (soundType === 'harp') synth.playHarp();
-      else if (soundType === 'birds') synth.playBirds();
+      if (soundType === 'twinkle') synth.playTwinkle();
+      else if (soundType === 'boat') synth.playRowBoat();
+      else if (soundType === 'mary') synth.playMary();
+      else if (soundType === 'london') synth.playLondon();
       setActiveSound(soundType);
     }
   };
@@ -1439,18 +1360,18 @@ export default function SpecialNeeds() {
             <motion.div {...fadeUp} className="bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-2xl h-full flex flex-col justify-between">
               <div>
                 <h3 className="font-serif text-xl sm:text-2xl font-bold mb-3 flex items-center gap-2 text-foreground">
-                  <Ear className="h-5 w-5 text-primary animate-pulse" /> Auditory Soundscape Synth
+                  <Music className="h-5 w-5 text-primary animate-pulse" /> Nursery Rhymes
                 </h3>
                 <p className="text-xs sm:text-sm text-muted-foreground mb-6">
-                  A beautiful, premium ambient sound machine. Triggering a new soundscape stops the previous immediately for seamless auditory therapy.
+                  Beautiful, long-playing nursery rhymes. Tap a song to start the continuous melody, tap again to stop for a calming auditory experience.
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-3 sm:gap-4 my-6">
                 {[
-                  { type: 'ocean', label: 'Ocean Waves', icon: Waves },
-                  { type: 'wind', label: 'Forest Wind', icon: TreePine },
-                  { type: 'harp', label: 'Zen Harp', icon: Music },
-                  { type: 'birds', label: 'Chirping Birds', icon: Bird }
+                  { type: 'twinkle', label: 'Twinkle Twinkle', icon: Star },
+                  { type: 'boat', label: 'Row Your Boat', icon: Waves },
+                  { type: 'mary', label: 'Mary Had A Lamb', icon: Bird },
+                  { type: 'london', label: 'London Bridge', icon: Sparkles }
                 ].map((s, idx) => (
                   <motion.button
                     key={idx}
@@ -1459,12 +1380,12 @@ export default function SpecialNeeds() {
                     className={`flex flex-col items-center justify-center gap-2.5 p-4 rounded-2xl border-2 transition-all duration-300 touch-manipulation min-h-[100px] ${activeSound === s.type ? 'border-primary bg-primary/10 shadow-lg shadow-primary/10' : 'border-border bg-background hover:border-primary/50'}`}
                   >
                     <s.icon className={`h-7 w-7 ${activeSound === s.type ? 'text-primary animate-bounce' : 'text-muted-foreground'}`} />
-                    <span className="text-xs font-bold">{s.label}</span>
-                    {activeSound === s.type && <span className="text-[10px] text-primary uppercase font-extrabold tracking-wider">Active</span>}
+                    <span className="text-xs font-bold text-center">{s.label}</span>
+                    {activeSound === s.type && <span className="text-[10px] text-primary uppercase font-extrabold tracking-wider">Playing</span>}
                   </motion.button>
                 ))}
               </div>
-              <p className="text-xs text-muted-foreground text-center">Pure organic synthesizer waveforms</p>
+              <p className="text-xs text-muted-foreground text-center">Full procedural synthesized melodies</p>
             </motion.div>
 
             <motion.div {...fadeUp} transition={{ delay: 0.15 }}>
