@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Link } from "wouter";
-import { ArrowLeft, User, Users, Mail, Lock, UserPlus, LogIn, Sparkles } from "lucide-react";
+import { ArrowLeft, User, Users, Mail, Lock, UserPlus, LogIn, Sparkles, X } from "lucide-react";
 
 export default function Auth() {
     const { t } = useLanguage();
@@ -102,10 +102,19 @@ export default function Auth() {
 
             {/* Right Side: Auth Form */}
             <div className="flex-1 flex flex-col justify-center items-center p-6 sm:p-10 md:p-12 lg:p-24 bg-card relative min-h-screen">
+                {/* Global Close/Back Button */}
+                <button
+                    onClick={() => window.history.length > 2 ? window.history.back() : window.location.href = '/'}
+                    className="absolute top-6 right-6 md:top-8 md:right-8 z-50 w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full bg-muted/50 backdrop-blur-md border border-border shadow-sm hover:bg-muted transition-colors text-muted-foreground hover:text-foreground group"
+                    aria-label="Go back"
+                >
+                    <X className="w-5 h-5 md:w-6 md:h-6 transition-transform group-hover:scale-110" />
+                </button>
+
                 {/* Mobile Logo */}
-                <div className="md:hidden absolute top-10 left-0 right-0 flex justify-center px-8">
+                <div className="md:hidden absolute top-10 left-0 right-0 flex justify-center px-8 pointer-events-none">
                     <Link href="/">
-                        <div className="flex items-center gap-3 group bg-background/50 backdrop-blur-sm px-4 py-2 rounded-full border border-border/40 shadow-sm">
+                        <div className="pointer-events-auto flex items-center gap-3 group bg-background/50 backdrop-blur-sm px-4 py-2 rounded-full border border-border/40 shadow-sm cursor-pointer">
                             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shadow-lg shadow-primary/20">
                                 <span className="text-white font-serif font-bold text-lg">A</span>
                             </div>

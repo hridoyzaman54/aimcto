@@ -478,7 +478,7 @@ export default function Chatbot() {
                         position: 'fixed',
                         left: position.x,
                         bottom: position.y,
-                        zIndex: 50,
+                        zIndex: 100,
                         cursor: isDragging ? 'grabbing' : 'grab',
                         touchAction: 'none',
                     }}
@@ -492,7 +492,7 @@ export default function Chatbot() {
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.95, y: 10 }}
                                 transition={{ duration: 0.2 }}
-                                className="w-[350px] h-[550px] flex flex-col overflow-hidden rounded-xl border-2 border-primary/20 shadow-[0_20px_50px_rgba(0,0,0,0.3)] bg-card text-card-foreground"
+                                className="w-[calc(100vw-48px)] max-w-[350px] h-[calc(100vh-220px)] max-h-[550px] flex flex-col overflow-hidden rounded-xl border-2 border-primary/20 shadow-[0_20px_50px_rgba(0,0,0,0.3)] bg-card text-card-foreground"
                             >
                                 {/* Header */}
                                 <div className="bg-primary px-5 py-4 flex justify-between items-center shadow-md relative overflow-hidden">

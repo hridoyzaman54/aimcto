@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2, X } from "lucide-react";
 
 export default function Signup() {
   const [, setLocation] = useLocation();
@@ -67,8 +67,17 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-stone-50 to-stone-100 dark:from-stone-900 dark:to-stone-950 p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-stone-50 to-stone-100 dark:from-stone-900 dark:to-stone-950 p-4 relative">
+      {/* Global Close/Back Button */}
+      <button
+          onClick={() => window.history.length > 2 ? window.history.back() : window.location.href = '/'}
+          className="absolute top-6 right-6 md:top-8 md:right-8 z-50 w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full bg-white/50 dark:bg-stone-800/50 backdrop-blur-md border border-stone-200 dark:border-stone-700 shadow-sm hover:bg-white dark:hover:bg-stone-800 transition-colors text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100 group"
+          aria-label="Go back"
+      >
+          <X className="w-5 h-5 md:w-6 md:h-6 transition-transform group-hover:scale-110" />
+      </button>
+
+      <div className="w-full max-w-md z-10">
         <div className="bg-white dark:bg-stone-800 rounded-2xl shadow-xl p-8 border border-stone-200 dark:border-stone-700">
           {/* Logo */}
           <div className="text-center mb-8">

@@ -337,15 +337,41 @@ export default function Header() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 top-[56px] sm:top-[72px] z-40 bg-background/98 backdrop-blur-xl xl:hidden overflow-y-auto overscroll-contain"
+            className="fixed inset-0 z-[60] bg-background/98 backdrop-blur-xl xl:hidden overflow-y-auto overscroll-contain"
           >
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
               transition={{ duration: 0.3, delay: 0.1 }}
-              className="container py-6 sm:py-8 flex flex-col gap-4 sm:gap-6 min-h-[calc(100vh-56px)] sm:min-h-[calc(100vh-72px)]"
+              className="container flex flex-col min-h-screen"
             >
+              {/* Mobile Menu Header with Close Button */}
+              <div className="flex items-center justify-between py-3 sm:py-4 mb-4 sm:mb-6 border-b border-border/40">
+                <a
+                  href="/"
+                  onClick={(e) => handleNavClick(e, "#top")}
+                  className="flex items-center gap-2 group cursor-pointer touch-manipulation"
+                >
+                  <div className="relative h-8 w-8 overflow-hidden bg-foreground text-background flex items-center justify-center font-serif font-bold text-lg">
+                    <span>A</span>
+                  </div>
+                  <div className="flex items-baseline gap-1">
+                    <span className="font-serif text-base font-bold leading-none tracking-tight">AIM Centre 360</span>
+                  </div>
+                </a>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9 sm:h-10 sm:w-10 rounded-full touch-manipulation active:scale-95 bg-muted/50 hover:bg-muted"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  aria-label="Close menu"
+                >
+                  <X className="h-5 w-5 sm:h-6 sm:w-6" />
+                </Button>
+              </div>
+
+              <div className="flex flex-col gap-4 sm:gap-6 pb-8">
               {/* User Info (if logged in) */}
               {!loading && user && (
                 <motion.div
@@ -429,6 +455,7 @@ export default function Header() {
                   </>
                 )}
               </motion.div>
+              </div>
 
               {/* Spacer to push content up */}
               <div className="flex-grow" />
