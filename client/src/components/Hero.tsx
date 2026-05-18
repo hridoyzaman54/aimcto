@@ -107,30 +107,11 @@ export default function Hero() {
       <div 
         className={`grid w-full grid-cols-1 md:grid-cols-4 gap-2 p-2 h-auto md:h-[800px] bg-white dark:bg-background overflow-hidden transition-opacity duration-500 ${imagesLoaded ? 'opacity-100' : 'opacity-0'}`}
       >
-        {/* Panel 1: Texture Background + Logo Video + Tagline - STATIC */}
+        {/* Panel 1: Logo Video + Tagline - STATIC */}
         <div
-          className="relative min-h-[350px] sm:min-h-[400px] md:h-[99%] flex flex-col items-center justify-center overflow-hidden border border-border/20 shadow-sm"
+          className="relative min-h-[350px] sm:min-h-[400px] md:h-[99%] flex flex-col items-center justify-center overflow-hidden bg-card border border-border shadow-sm"
           style={{ isolation: 'auto' }}
         >
-          {/* Texture background */}
-          <div className="absolute inset-0">
-            <img
-              src="/images/hero/panel-1-texture.webp"
-              alt="Paper Texture"
-              className="h-full w-full object-cover dark:hidden"
-              fetchPriority="high"
-              loading="eager"
-              decoding="async"
-            />
-            <img
-              src="/images/hero/panel-1-texture-dark.webp"
-              alt="Dark Paper Texture"
-              className="h-full w-full object-cover hidden dark:block"
-              fetchPriority="high"
-              loading="eager"
-              decoding="async"
-            />
-          </div>
 
           {/* Logo Video + Tagline — single centered column, nudged slightly above center */}
           <div
@@ -169,11 +150,11 @@ export default function Hero() {
             </h2>
           </div>
 
-          {/* Dark mode: switch blend mode to screen and invert colors for proper transparency */}
+          {/* Dark mode: switch blend mode to screen */}
           <style>{`
             .dark [data-logo-video] {
               mix-blend-mode: screen;
-              filter: invert(1) brightness(1.5) contrast(1.2);
+              filter: brightness(1.2);
             }
           `}</style>
         </div>
