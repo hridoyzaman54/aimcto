@@ -117,21 +117,27 @@ export default function Hero() {
           <div
             className="absolute inset-0 flex flex-col items-center justify-center -mt-[6%] sm:-mt-[8%] md:-mt-[12%]"
           >
-            {/* Logo Video */}
-            <video
-              ref={logoVideoRef}
-              data-logo-video
-              autoPlay
-              loop
-              muted
-              playsInline
-              preload="metadata"
-              poster="/videos/logo-poster.webp"
-              className="w-[140px] h-[140px] sm:w-[160px] sm:h-[160px] md:w-[200px] md:h-[200px] lg:w-[240px] lg:h-[240px] object-contain flex-shrink-0"
-              style={{ mixBlendMode: 'multiply' }}
-            >
-              <source src="/videos/AIMCentre360_3-ezgif.com-mute-video.mp4" type="video/mp4" />
-            </video>
+            {/* Logo Video Container with Dark Mode Glow */}
+            <div className="relative flex-shrink-0 flex items-center justify-center">
+              {/* The Glow Backdrop - visible only in dark mode to preserve multiply blend without changing logo colors */}
+              <div className="absolute inset-0 bg-white rounded-full blur-[30px] opacity-0 dark:opacity-100 transition-opacity duration-500 pointer-events-none scale-75" />
+              
+              {/* Logo Video */}
+              <video
+                ref={logoVideoRef}
+                data-logo-video
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="metadata"
+                poster="/videos/logo-poster.webp"
+                className="relative w-[140px] h-[140px] sm:w-[160px] sm:h-[160px] md:w-[200px] md:h-[200px] lg:w-[240px] lg:h-[240px] object-contain flex-shrink-0"
+                style={{ mixBlendMode: 'multiply' }}
+              >
+                <source src="/videos/AIMCentre360_3-ezgif.com-mute-video.mp4" type="video/mp4" />
+              </video>
+            </div>
 
             {/* Tight spacer between video and text */}
             <div className="h-3 sm:h-4 md:h-5 flex-shrink-0" />
@@ -149,14 +155,6 @@ export default function Hero() {
               </span>
             </h2>
           </div>
-
-          {/* Dark mode: switch blend mode to screen */}
-          <style>{`
-            .dark [data-logo-video] {
-              mix-blend-mode: screen;
-              filter: brightness(1.2);
-            }
-          `}</style>
         </div>
 
         {/* Panel 2: Video Background - Mouse Parallax Only on Desktop */}
