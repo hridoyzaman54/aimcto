@@ -11,102 +11,102 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 
 // Sample courses to always display alongside database courses
-const sampleCourses = [
+const getSampleCourses = (language: string) => [
   {
     id: -1,
-    title: "English Medium - Class 5",
-    category: "Academic",
+    title: language === 'bn' ? "ইংলিশ মিডিয়াম - ক্লাস ৫" : "English Medium - Class 5",
+    category: language === 'bn' ? "একাডেমিক" : "Academic",
     thumbnail: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?q=80&w=2022&auto=format&fit=crop",
     price: "2500",
-    description: "Comprehensive curriculum covering all major subjects for Class 5 English Medium students."
+    description: language === 'bn' ? "৫ম শ্রেণির ইংলিশ মিডিয়াম শিক্ষার্থীদের সব মূল বিষয়।" : "Comprehensive curriculum covering all major subjects for Class 5 English Medium students."
   },
   {
     id: -2,
-    title: "Preschool Discovery",
-    category: "Tiny Explorers",
+    title: language === 'bn' ? "প্রিস্কুল ডিসকভারি" : "Preschool Discovery",
+    category: language === 'bn' ? "খুদে অভিযাত্রী" : "Tiny Explorers",
     thumbnail: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?q=80&w=2072&auto=format&fit=crop",
     price: "1800",
-    description: "Fun and interactive learning sessions designed for preschoolers to spark curiosity."
+    description: language === 'bn' ? "প্রিস্কুলারদের কৌতূহল জাগাতে মজাদার এবং ইন্টারেক্টিভ লার্নিং সেশন।" : "Fun and interactive learning sessions designed for preschoolers to spark curiosity."
   },
   {
     id: -3,
-    title: "Autism Support - Level 1",
-    category: "Special Needs",
+    title: language === 'bn' ? "অটিজম সাপোর্ট - লেভেল ১" : "Autism Support - Level 1",
+    category: language === 'bn' ? "বিশেষ চাহিদা" : "Special Needs",
     thumbnail: "https://images.unsplash.com/photo-1555819206-7b30da4f1506?q=80&w=2071&auto=format&fit=crop",
     price: "3000",
-    description: "Tailored educational support for children with Level 1 Autism, focusing on social skills."
+    description: language === 'bn' ? "লেভেল ১ অটিজম শিশুদের সামাজিক দক্ষতার জন্য উপযুক্ত শিক্ষাগত সহায়তা।" : "Tailored educational support for children with Level 1 Autism, focusing on social skills."
   },
   {
     id: -4,
-    title: "Professional Spoken English",
-    category: "Spoken English & Grammar",
+    title: language === 'bn' ? "প্রফেশনাল স্পোকেন ইংলিশ" : "Professional Spoken English",
+    category: language === 'bn' ? "স্পোকেন ইংলিশ ও গ্রামার" : "Spoken English & Grammar",
     thumbnail: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=2070&auto=format&fit=crop",
     price: "2200",
-    description: "Master the art of communication with our professional spoken English course."
+    description: language === 'bn' ? "আমাদের প্রফেশনাল স্পোকেন ইংলিশ কোর্সের মাধ্যমে যোগাযোগের শিল্প আয়ত্ত করুন।" : "Master the art of communication with our professional spoken English course."
   },
   {
     id: -5,
-    title: "Pottery Workshop",
-    category: "Skills and Creativities",
+    title: language === 'bn' ? "মৃৎশিল্প ওয়ার্কশপ" : "Pottery Workshop",
+    category: language === 'bn' ? "দক্ষতা ও সৃজনশীলতা" : "Skills and Creativities",
     thumbnail: "https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?q=80&w=2070&auto=format&fit=crop",
     price: "1500",
-    description: "Hands-on pottery workshop to unleash your creativity and learn a new skill."
+    description: language === 'bn' ? "সৃজনশীলতা প্রকাশ এবং নতুন দক্ষতা শিখতে হাতে-কলমে মৃৎশিল্প ওয়ার্কশপ।" : "Hands-on pottery workshop to unleash your creativity and learn a new skill."
   },
   {
     id: -6,
-    title: "Bangla Medium - Class 8",
-    category: "Academic",
+    title: language === 'bn' ? "বাংলা মিডিয়াম - ক্লাস ৮" : "Bangla Medium - Class 8",
+    category: language === 'bn' ? "একাডেমিক" : "Academic",
     thumbnail: "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?q=80&w=2073&auto=format&fit=crop",
     price: "2800",
-    description: "In-depth academic support for Class 8 Bangla Medium students across all subjects."
+    description: language === 'bn' ? "অষ্টম শ্রেণির বাংলা মিডিয়াম শিক্ষার্থীদের সকল বিষয়ে গভীর একাডেমিক সহায়তা।" : "In-depth academic support for Class 8 Bangla Medium students across all subjects."
   },
   {
     id: -7,
-    title: "Kindergarten Fun Learning",
-    category: "Tiny Explorers",
+    title: language === 'bn' ? "কিন্ডারগার্টেন মজার শিক্ষা" : "Kindergarten Fun Learning",
+    category: language === 'bn' ? "খুদে অভিযাত্রী" : "Tiny Explorers",
     thumbnail: "https://images.unsplash.com/photo-1587654780291-39c9404d746b?q=80&w=2070&auto=format&fit=crop",
     price: "2000",
-    description: "Engaging activities and games to make learning fun for kindergartners."
+    description: language === 'bn' ? "কিন্ডারগার্টেনদের জন্য শেখাকে মজাদার করতে আকর্ষণীয় গেম এবং অ্যাক্টিভিটি।" : "Engaging activities and games to make learning fun for kindergartners."
   },
   {
     id: -8,
-    title: "English Version - Class 10",
-    category: "Academic",
+    title: language === 'bn' ? "ইংলিশ ভার্সন - ক্লাস ১০" : "English Version - Class 10",
+    category: language === 'bn' ? "একাডেমিক" : "Academic",
     thumbnail: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=2073&auto=format&fit=crop",
     price: "3500",
-    description: "Complete SSC preparation for English Version students with expert guidance."
+    description: language === 'bn' ? "ইংলিশ ভার্সন শিক্ষার্থীদের জন্য বিশেষজ্ঞ গাইডেন্স সহ সম্পূর্ণ এসএসসি প্রস্তুতি।" : "Complete SSC preparation for English Version students with expert guidance."
   },
   {
     id: -9,
-    title: "Art & Craft for Kids",
-    category: "Skills and Creativities",
+    title: language === 'bn' ? "বাচ্চাদের জন্য আর্ট ও ক্রাফট" : "Art & Craft for Kids",
+    category: language === 'bn' ? "দক্ষতা ও সৃজনশীলতা" : "Skills and Creativities",
     thumbnail: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?q=80&w=2071&auto=format&fit=crop",
     price: "1200",
-    description: "Creative art and craft sessions to develop fine motor skills and imagination."
+    description: language === 'bn' ? "ফাইন মোটর স্কিল এবং কল্পনা বিকাশে সৃজনশীল আর্ট ও ক্রাফট সেশন।" : "Creative art and craft sessions to develop fine motor skills and imagination."
   },
   {
     id: -10,
-    title: "ADHD Learning Support",
-    category: "Special Needs",
+    title: language === 'bn' ? "এডিএইচডি লার্নিং সাপোর্ট" : "ADHD Learning Support",
+    category: language === 'bn' ? "বিশেষ চাহিদা" : "Special Needs",
     thumbnail: "https://images.unsplash.com/photo-1544776193-352d25ca82cd?q=80&w=2070&auto=format&fit=crop",
     price: "3200",
-    description: "Specialized learning techniques for children with ADHD to improve focus and retention."
+    description: language === 'bn' ? "এডিএইচডি আক্রান্ত শিশুদের মনোযোগ এবং মনে রাখার ক্ষমতা উন্নত করার বিশেষ কৌশল।" : "Specialized learning techniques for children with ADHD to improve focus and retention."
   },
   {
     id: -11,
-    title: "Grammar Mastery",
-    category: "Spoken English & Grammar",
+    title: language === 'bn' ? "গ্রামার মাস্টারি" : "Grammar Mastery",
+    category: language === 'bn' ? "স্পোকেন ইংলিশ ও গ্রামার" : "Spoken English & Grammar",
     thumbnail: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=2073&auto=format&fit=crop",
     price: "1800",
-    description: "Master English grammar with comprehensive lessons and practice exercises."
+    description: language === 'bn' ? "বিস্তারিত লেসন এবং অনুশীলনের মাধ্যমে ইংরেজি গ্রামার আয়ত্ত করুন।" : "Master English grammar with comprehensive lessons and practice exercises."
   },
   {
     id: -12,
-    title: "Nursery Rhymes & Stories",
-    category: "Tiny Explorers",
+    title: language === 'bn' ? "নার্সারি ছড়া ও গল্প" : "Nursery Rhymes & Stories",
+    category: language === 'bn' ? "খুদে অভিযাত্রী" : "Tiny Explorers",
     thumbnail: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?q=80&w=2072&auto=format&fit=crop",
     price: "1000",
-    description: "Delightful nursery rhymes and storytelling sessions for early childhood development."
+    description: language === 'bn' ? "প্রারম্ভিক শৈশব বিকাশের জন্য চমৎকার নার্সারি ছড়া এবং গল্প বলার সেশন।" : "Delightful nursery rhymes and storytelling sessions for early childhood development."
   }
 ];
 
@@ -174,7 +174,7 @@ function WishlistButton({ courseId, className = "" }: { courseId: number; classN
 }
 
 export default function Courses() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { user } = useAuth();
   const [activeCategory, setActiveCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
@@ -199,8 +199,9 @@ export default function Courses() {
   }, []);
 
   // Combine sample courses with database courses
+  const currentSampleCourses = getSampleCourses(language);
   const allCourses = [
-    ...sampleCourses.map(course => ({
+    ...currentSampleCourses.map(course => ({
       ...course,
       categoryName: course.category,
     })),
@@ -212,7 +213,7 @@ export default function Courses() {
 
   // Get unique categories from both sample and database courses
   const categories = ["All", ...Array.from(new Set([
-    ...sampleCourses.map(c => c.category),
+    ...currentSampleCourses.map(c => c.category),
     ...(dbCategories || []).map(c => c.name),
   ]))];
 
@@ -315,7 +316,7 @@ export default function Courses() {
           >
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search courses..."
+              placeholder={t("courses.searchPlaceholder") || "Search courses..."}
               className="pl-10 bg-background/50 backdrop-blur-sm border-primary/20 focus:border-primary text-foreground placeholder:text-muted-foreground shadow-sm"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -328,7 +329,7 @@ export default function Courses() {
             {isLoading ? (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Loading categories...
+                {t("courses.loadingCategories") || "Loading categories..."}
               </div>
             ) : (
               categories.map((category, index) => (
@@ -343,7 +344,7 @@ export default function Courses() {
                     value={category}
                     className="rounded-none border-b-2 border-transparent px-2 sm:px-4 py-2 text-xs sm:text-sm data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none transition-all duration-300 hover:text-primary hover:bg-primary/5 hover:-translate-y-0.5 touch-manipulation whitespace-nowrap"
                   >
-                    {category}
+                    {category === "All" ? (language === 'bn' ? 'সব' : 'All') : category}
                   </TabsTrigger>
                 </motion.div>
               ))
@@ -359,7 +360,7 @@ export default function Courses() {
             ) : filteredCourses.length === 0 ? (
               <div className="text-center py-16">
                 <FolderTree className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">No courses found in this category.</p>
+                <p className="text-muted-foreground">{t("courses.noCoursesFound") || "No courses found in this category."}</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8 mb-12 sm:mb-16 md:mb-24">
@@ -402,7 +403,7 @@ export default function Courses() {
                           {course.title}
                         </h3>
                         <span className="font-bold text-primary">
-                          {parseFloat(course.price || '0') > 0 ? `৳${course.price}` : 'Free'}
+                          {parseFloat(course.price || '0') > 0 ? `৳${course.price}` : (t("courses.free") || "Free")}
                         </span>
                       </div>
 
@@ -414,11 +415,11 @@ export default function Courses() {
                         <div className="flex items-center justify-between pt-4 border-t border-border">
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <BookOpen className="h-4 w-4" />
-                            <span>{(course as any).totalLessons || 0} Lessons</span>
+                            <span>{(course as any).totalLessons || 0} {t("courses.lessons") || "Lessons"}</span>
                           </div>
 
                           <Button variant="ghost" className="group/btn p-0 hover:bg-transparent text-premium-hover text-xs">
-                            View Details
+                            {t("courses.viewDetails") || "View Details"}
                             <ArrowRight className="ml-2 h-3 w-3 transition-transform group-hover/btn:translate-x-1" />
                           </Button>
                         </div>
@@ -444,7 +445,7 @@ export default function Courses() {
                   variant="outline"
                   className="rounded-none border-primary text-primary hover:bg-primary hover:text-primary-foreground px-6 sm:px-12 py-5 sm:py-7 text-xs sm:text-sm uppercase tracking-[0.15em] sm:tracking-[0.2em] font-medium transition-all duration-300 hover-magnetic touch-manipulation active:scale-95"
                 >
-                  View All Courses
+                  {t("courses.viewAllCourses") || "View All Courses"}
                   <ArrowRight className="ml-3 h-4 w-4" />
                 </Button>
               </Link>
@@ -454,7 +455,7 @@ export default function Courses() {
             {filteredCourses.length > 3 && (
               <div className="border-t border-border pt-8 sm:pt-16">
                 <div className="flex items-center justify-between mb-6 sm:mb-8">
-                  <h3 className="text-xl sm:text-2xl font-serif font-bold">More to Explore</h3>
+                  <h3 className="text-xl sm:text-2xl font-serif font-bold">{t("courses.moreToExplore") || "More to Explore"}</h3>
                   <div className="flex gap-2">
                     <Button
                       variant="outline"
@@ -522,9 +523,9 @@ export default function Courses() {
                           </p>
                           <div className="flex items-center justify-between mb-3">
                             <span className="font-bold text-primary text-sm">
-                              {parseFloat(course.price || '0') > 0 ? `৳${course.price}` : 'Free'}
+                              {parseFloat(course.price || '0') > 0 ? `৳${course.price}` : (t("courses.free") || "Free")}
                             </span>
-                            <span className="text-xs text-muted-foreground">{(course as any).totalLessons || 0} Lessons</span>
+                            <span className="text-xs text-muted-foreground">{(course as any).totalLessons || 0} {t("courses.lessons") || "Lessons"}</span>
                           </div>
                           {/* Enroll Now Button */}
                           <Link href={user ? "/student/catalog" : "/login"}>
@@ -532,7 +533,7 @@ export default function Courses() {
                               className="w-full h-8 text-xs bg-primary hover:bg-primary/90 transition-all duration-300"
                               onClick={(e) => e.stopPropagation()}
                             >
-                              {user ? "View Course" : "Enroll Now"}
+                              {user ? (t("courses.viewCourse") || "View Course") : (t("courses.enroll") || "Enroll Now")}
                               <ArrowRight className="ml-1 h-3 w-3" />
                             </Button>
                           </Link>

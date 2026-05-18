@@ -134,6 +134,15 @@ export const translations = {
     "courses.subtitle": "Choose the perfect journey for your educational goals",
     "courses.enroll": "Enroll Now",
     "courses.wishlist": "Add to Wishlist",
+    "courses.searchPlaceholder": "Search courses...",
+    "courses.loadingCategories": "Loading categories...",
+    "courses.noCoursesFound": "No courses found in this category.",
+    "courses.viewDetails": "View Details",
+    "courses.moreToExplore": "More to Explore",
+    "courses.viewAllCourses": "View All Courses",
+    "courses.viewCourse": "View Course",
+    "courses.free": "Free",
+    "courses.lessons": "Lessons",
 
     // Special Needs
     "special.tag": "Inclusive Education",
@@ -293,6 +302,15 @@ export const translations = {
     "courses.subtitle": "আপনার শিক্ষাগত লক্ষ্যের জন্য সঠিক পথটি বেছে নিন",
     "courses.enroll": "ভর্তি হোন",
     "courses.wishlist": "উইশলিস্টে যোগ করুন",
+    "courses.searchPlaceholder": "কোর্স খুঁজুন...",
+    "courses.loadingCategories": "ক্যাটাগরি লোড হচ্ছে...",
+    "courses.noCoursesFound": "এই ক্যাটাগরিতে কোনো কোর্স পাওয়া যায়নি।",
+    "courses.viewDetails": "বিস্তারিত দেখুন",
+    "courses.moreToExplore": "আরও দেখুন",
+    "courses.viewAllCourses": "সকল কোর্স দেখুন",
+    "courses.viewCourse": "কোর্স দেখুন",
+    "courses.free": "ফ্রি",
+    "courses.lessons": "লেসন",
 
     // Special Needs
     "special.tag": "অন্তর্ভুক্তিমূলক শিক্ষা",
