@@ -183,6 +183,7 @@ export default function Courses() {
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [isCarouselHovered, setIsCarouselHovered] = useState(false);
 
   // Fetch categories from database
   const { data: dbCategories, isLoading: categoriesLoading } = trpc.category.getAll.useQuery();
@@ -225,12 +226,30 @@ export default function Courses() {
 
   const handleNext = () => {
     const maxIndex = Math.max(0, filteredCourses.length - (isMobile ? 1 : 3));
-    setCarouselIndex(prev => Math.min(prev + 1, maxIndex));
+    setCarouselIndex(prev => (prev >= maxIndex ? 0 : prev + 1));
   };
 
   const handlePrev = () => {
-    setCarouselIndex(prev => Math.max(prev - 1, 0));
+    const maxIndex = Math.max(0, filteredCourses.length - (isMobile ? 1 : 3));
+    setCarouselIndex(prev => (prev <= 0 ? maxIndex : prev - 1));
   };
+
+  // Premium Auto-play carousel
+  useEffect(() => {
+    if (filteredCourses.length <= (isMobile ? 1 : 3)) return;
+    
+    // Pause on hover or touch
+    if (isCarouselHovered || touchStart !== null) return;
+    
+    const interval = setInterval(() => {
+      setCarouselIndex(prev => {
+        const maxIndex = Math.max(0, filteredCourses.length - (isMobile ? 1 : 3));
+        return prev >= maxIndex ? 0 : prev + 1;
+      });
+    }, 3000); // Premium pacing
+    
+    return () => clearInterval(interval);
+  }, [filteredCourses.length, isCarouselHovered, touchStart, isMobile, carouselIndex]);
 
   // Touch handlers for swipe
   const minSwipeDistance = 50;
@@ -245,7 +264,11 @@ export default function Courses() {
   };
 
   const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
+    if (!touchStart || !touchEnd) {
+      setTouchStart(null);
+      setTouchEnd(null);
+      return;
+    }
     const distance = touchStart - touchEnd;
     const isLeftSwipe = distance > minSwipeDistance;
     const isRightSwipe = distance < -minSwipeDistance;
@@ -254,6 +277,8 @@ export default function Courses() {
     } else if (isRightSwipe) {
       handlePrev();
     }
+    setTouchStart(null);
+    setTouchEnd(null);
   };
 
   const isLoading = categoriesLoading || coursesLoading;
@@ -456,6 +481,8 @@ export default function Courses() {
                   onTouchStart={onTouchStart}
                   onTouchMove={onTouchMove}
                   onTouchEnd={onTouchEnd}
+                  onMouseEnter={() => setIsCarouselHovered(true)}
+                  onMouseLeave={() => setIsCarouselHovered(false)}
                 >
                   <motion.div
                     className="flex gap-4 sm:gap-6 cursor-grab active:cursor-grabbing"

@@ -169,11 +169,11 @@ export default function Hero() {
             </h2>
           </div>
 
-          {/* Dark mode: switch blend mode to screen */}
+          {/* Dark mode: switch blend mode to screen and invert colors for proper transparency */}
           <style>{`
             .dark [data-logo-video] {
               mix-blend-mode: screen;
-              filter: brightness(1.2);
+              filter: invert(1) brightness(1.5) contrast(1.2);
             }
           `}</style>
         </div>
