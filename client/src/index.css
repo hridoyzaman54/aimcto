@@ -258,14 +258,14 @@
 
 /* Fix horizontal scrollbar/overflow on mobile */
 html, body {
-  overflow-x: hidden !important;
+  overflow-x: clip !important;
   max-width: 100vw !important;
 }
 
 /* Mobile sidebar fix - force hide desktop sidebar on mobile */
 @media (max-width: 767px) {
   html, body, #root {
-    overflow-x: hidden !important;
+    overflow-x: clip !important;
     max-width: 100vw !important;
     width: 100% !important;
   }
