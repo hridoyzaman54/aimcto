@@ -1,10 +1,10 @@
-# fly.toml app configuration file generated for aimcentre360 on 2026-06-13T18:45:43Z
+# fly.toml app configuration file generated for aimcentre360 on 2026-06-13T18:59:25Z
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
 app = 'aimcentre360'
-primary_region = 'iad'
+primary_region = 'sin'
 
 [build]
 
